@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Integra 360 | FarmaVital</title>
+
+    <!-- Biblioteca de ícones -->
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    >
+
+    <link rel="stylesheet" href="/style.css">
+    <script src="/script.js" defer></script>
+</head>
+
+<body>
+    <!-- Botão exibido somente em telas menores -->
+    <button
+        id="menuButton"
+        class="mobile-menu-button"
+        type="button"
+        aria-label="Abrir menú"
+        aria-controls="sidebar"
+        aria-expanded="false"
+    >
+        <span class="material-symbols-outlined" aria-hidden="true">
+            menu
+        </span>
+    </button>
+
+    <!-- Barra lateral -->
+    <aside id="sidebar" class="sidebar">
+        <div class="brand">
+            <strong>INTEGRA 360</strong>
+            <span>Gestión comercial</span>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Navegación principal">
+            <button
+                class="nav-item active"
+                type="button"
+                aria-current="page"
+            >
+                <span
+                    class="material-symbols-outlined"
+                    aria-hidden="true"
+                >
+                    home
+                </span>
+
+                <span>01 Inicio</span>
+            </button>
+
+            <button
+                class="nav-item"
+                type="button"
+                data-coming-soon="La página de productos será implementada en la próxima etapa."
+            >
+                <span
+                    class="material-symbols-outlined"
+                    aria-hidden="true"
+                >
+                    inventory_2
+                </span>
+
+                <span>02 Productos</span>
+            </button>
+
+            <button
+                class="nav-item"
+                type="button"
+                data-coming-soon="La página de ventas será implementada en la próxima etapa."
+            >
+                <span
+                    class="material-symbols-outlined"
+                    aria-hidden="true"
+                >
+                    shopping_cart
+                </span>
+
+                <span>03 Ventas</span>
+            </button>
+
+            <button
+                class="nav-item"
+                type="button"
+                data-coming-soon="La página de compras e inventario será implementada posteriormente."
+            >
+                <span
+                    class="material-symbols-outlined"
+                    aria-hidden="true"
+                >
+                    deployed_code
+                </span>
+
+                <span>04 Compras e inventario</span>
+            </button>
+
+            <button
+                class="nav-item"
+                type="button"
+                data-coming-soon="La página de costos y márgenes será implementada posteriormente."
+            >
+                <span
+                    class="material-symbols-outlined"
+                    aria-hidden="true"
+                >
+                    monitoring
+                </span>
+
+                <span>05 Costos y márgenes</span>
+            </button>
+
+            <button
+                class="nav-item"
+                type="button"
+                data-coming-soon="La página de promociones será implementada posteriormente."
+            >
+                <span
+                    class="material-symbols-outlined"
+                    aria-hidden="true"
+                >
+                    sell
+                </span>
+
+                <span>06 Promociones y acciones</span>
+            </button>
+        </nav>
+
+        <button
+            class="logout-button"
+            type="button"
+            data-coming-soon="El inicio de sesión todavía no está habilitado en esta demostración."
+        >
+            <span
+                class="material-symbols-outlined"
+                aria-hidden="true"
+            >
+                logout
+            </span>
+
+            <span>Cerrar sesión</span>
+        </button>
+    </aside>
+
+    <!-- Conteúdo da aplicação -->
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="topbar-user">
+                <span
+                    class="material-symbols-outlined"
+                    aria-hidden="true"
+                >
+                    person
+                </span>
+
+                <span>Administrador</span>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <!-- Cabeçalho -->
+            <section class="page-header">
+                <div class="page-heading">
+                    <h1>Inicio</h1>
+                    <p>Resumen comercial de FarmaVital</p>
+
+                    <span class="demo-badge">
+                        Datos de demostración
+                    </span>
+                </div>
+
+                <div class="page-actions">
+                    <label class="sr-only" for="periodSelector">
+                        Período de los indicadores
+                    </label>
+
+                    <select
+                        id="periodSelector"
+                        class="period-select"
+                        disabled
+                    >
+                        <option id="periodOption">
+                            Cargando período...
+                        </option>
+                    </select>
+
+                    <button
+                        class="export-button"
+                        type="button"
+                        data-coming-soon="La exportación Excel/CSV será implementada en una próxima etapa."
+                    >
+                        <span
+                            class="material-symbols-outlined"
+                            aria-hidden="true"
+                        >
+                            download
+                        </span>
+
+                        <span>
+                            <strong>Exportar datos</strong>
+                            <small>Excel / CSV</small>
+                        </span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Indicadores -->
+            <section class="kpi-grid" aria-label="Indicadores comerciales">
+                <article class="kpi-card loading">
+                    <span
+                        class="material-symbols-outlined kpi-icon"
+                        aria-hidden="true"
+                    >
+                        shopping_cart
+                    </span>
+
+                    <div>
+                        <h2>Ventas totales</h2>
+                        <strong id="totalSales" class="kpi-value">
+                            —
+                        </strong>
+                    </div>
+                </article>
+
+                <article class="kpi-card loading">
+                    <span
+                        class="material-symbols-outlined kpi-icon"
+                        aria-hidden="true"
+                    >
+                        receipt_long
+                    </span>
+
+                    <div>
+                        <h2>Ventas registradas</h2>
+                        <strong id="registeredSales" class="kpi-value">
+                            —
+                        </strong>
+                    </div>
+                </article>
+
+                <article class="kpi-card loading">
+                    <span
+                        class="material-symbols-outlined kpi-icon"
+                        aria-hidden="true"
+                    >
+                        inventory_2
+                    </span>
+
+                    <div>
+                        <h2>Unidades vendidas</h2>
+                        <strong id="soldUnits" class="kpi-value">
+                            —
+                        </strong>
+                    </div>
+                </article>
+
+                <article class="kpi-card loading">
+                    <span
+                        class="material-symbols-outlined kpi-icon"
+                        aria-hidden="true"
+                    >
+                        sell
+                    </span>
+
+                    <div>
+                        <h2>Ticket promedio</h2>
+                        <strong id="averageTicket" class="kpi-value">
+                            —
+                        </strong>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Acessos rápidos -->
+            <section class="panel quick-access-panel">
+                <h2>Accesos rápidos</h2>
+
+                <div class="quick-actions">
+                    <button
+                        class="outline-action"
+                        type="button"
+                        data-coming-soon="El registro de ventas será implementado en la página de ventas."
+                    >
+                        <span
+                            class="material-symbols-outlined"
+                            aria-hidden="true"
+                        >
+                            shopping_cart
+                        </span>
+
+                        Registrar venta
+                    </button>
+
+                    <button
+                        class="outline-action"
+                        type="button"
+                        data-coming-soon="El formulario de productos será implementado en la próxima etapa."
+                    >
+                        <span
+                            class="material-symbols-outlined"
+                            aria-hidden="true"
+                        >
+                            inventory_2
+                        </span>
+
+                        Agregar producto
+                    </button>
+
+                    <button
+                        class="outline-action"
+                        type="button"
+                        data-coming-soon="El registro de compras será implementado posteriormente."
+                    >
+                        <span
+                            class="material-symbols-outlined"
+                            aria-hidden="true"
+                        >
+                            deployed_code
+                        </span>
+
+                        Registrar compra
+                    </button>
+                </div>
+            </section>
+
+            <!-- Tabelas -->
+            <section class="dashboard-grid">
+                <article class="panel data-panel">
+                    <h2>Ventas recientes</h2>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col">N.º venta</th>
+                                    <th scope="col">Total</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="recentSalesBody">
+                                <tr>
+                                    <td colspan="3" class="table-message">
+                                        Cargando ventas...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button
+                        class="text-action"
+                        type="button"
+                        data-coming-soon="La página completa de ventas será implementada en la próxima etapa."
+                    >
+                        Ver ventas
+                    </button>
+                </article>
+
+                <article class="panel data-panel">
+                    <h2>Alertas de stock</h2>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Producto</th>
+                                    <th scope="col">Stock actual</th>
+                                    <th scope="col">Mínimo</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="stockAlertsBody">
+                                <tr>
+                                    <td colspan="3" class="table-message">
+                                        Cargando inventario...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button
+                        class="text-action"
+                        type="button"
+                        data-coming-soon="La página de inventario será implementada posteriormente."
+                    >
+                        Ver inventario
+                    </button>
+                </article>
+            </section>
+
+            <footer class="page-footer">
+                Prototipo visual · Información ficticia
+            </footer>
+        </main>
+    </div>
+
+    <!-- Fundo do menu móvel -->
+    <button
+        id="sidebarOverlay"
+        class="sidebar-overlay"
+        type="button"
+        aria-label="Cerrar menú"
+        tabindex="-1"
+    ></button>
+
+    <!-- Mensagens temporárias -->
+    <div
+        id="notification"
+        class="notification"
+        role="status"
+        aria-live="polite"
+    ></div>
+</body>
+</html>
