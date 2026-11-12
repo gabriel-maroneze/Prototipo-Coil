@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <!-- Botão exibido somente em telas menores -->
+    <!-- Botão do menu em telas pequenas -->
     <button
         id="menuButton"
         class="mobile-menu-button"
@@ -30,7 +30,10 @@
         aria-controls="sidebar"
         aria-expanded="false"
     >
-        <span class="material-symbols-outlined" aria-hidden="true">
+        <span
+            class="material-symbols-outlined"
+            aria-hidden="true"
+        >
             menu
         </span>
     </button>
@@ -42,10 +45,14 @@
             <span>Gestión comercial</span>
         </div>
 
-        <nav class="sidebar-nav" aria-label="Navegación principal">
+        <nav
+            class="sidebar-nav"
+            aria-label="Navegación principal"
+        >
             <button
                 class="nav-item active"
                 type="button"
+                data-page="inicio"
                 aria-current="page"
             >
                 <span
@@ -61,7 +68,7 @@
             <button
                 class="nav-item"
                 type="button"
-                data-coming-soon="La página de productos será implementada en la próxima etapa."
+                data-page="productos"
             >
                 <span
                     class="material-symbols-outlined"
@@ -152,6 +159,7 @@
 
     <!-- Conteúdo da aplicação -->
     <div class="app-shell">
+        <!-- Barra superior -->
         <header class="topbar">
             <div class="topbar-user">
                 <span
@@ -166,36 +174,319 @@
         </header>
 
         <main class="dashboard">
-            <!-- Cabeçalho -->
-            <section class="page-header">
-                <div class="page-heading">
-                    <h1>Inicio</h1>
-                    <p>Resumen comercial de FarmaVital</p>
+            <!-- ==================================================
+                 PÁGINA INICIAL
+                 ================================================== -->
 
-                    <span class="demo-badge">
-                        Datos de demostración
-                    </span>
-                </div>
+            <section
+                id="homePage"
+                class="app-page"
+                data-page-content="inicio"
+            >
+                <!-- Cabeçalho -->
+                <section class="page-header">
+                    <div class="page-heading">
+                        <h1>Inicio</h1>
 
-                <div class="page-actions">
-                    <label class="sr-only" for="periodSelector">
-                        Período de los indicadores
-                    </label>
+                        <p>
+                            Resumen comercial de FarmaVital
+                        </p>
 
-                    <select
-                        id="periodSelector"
-                        class="period-select"
-                        disabled
-                    >
-                        <option id="periodOption">
-                            Cargando período...
-                        </option>
-                    </select>
+                        <span class="demo-badge">
+                            Datos de demostración
+                        </span>
+                    </div>
+
+                    <div class="page-actions">
+                        <label
+                            class="sr-only"
+                            for="periodSelector"
+                        >
+                            Período de los indicadores
+                        </label>
+
+                        <select
+                            id="periodSelector"
+                            class="period-select"
+                            disabled
+                        >
+                            <option id="periodOption">
+                                Cargando período...
+                            </option>
+                        </select>
+
+                        <button
+                            class="export-button"
+                            type="button"
+                            data-coming-soon="La exportación Excel/CSV será implementada en una próxima etapa."
+                        >
+                            <span
+                                class="material-symbols-outlined"
+                                aria-hidden="true"
+                            >
+                                download
+                            </span>
+
+                            <span>
+                                <strong>Exportar datos</strong>
+                                <small>Excel / CSV</small>
+                            </span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Indicadores -->
+                <section
+                    class="kpi-grid"
+                    aria-label="Indicadores comerciales"
+                >
+                    <article class="kpi-card loading">
+                        <span
+                            class="material-symbols-outlined kpi-icon"
+                            aria-hidden="true"
+                        >
+                            shopping_cart
+                        </span>
+
+                        <div>
+                            <h2>Ventas totales</h2>
+
+                            <strong
+                                id="totalSales"
+                                class="kpi-value"
+                            >
+                                —
+                            </strong>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card loading">
+                        <span
+                            class="material-symbols-outlined kpi-icon"
+                            aria-hidden="true"
+                        >
+                            receipt_long
+                        </span>
+
+                        <div>
+                            <h2>Ventas registradas</h2>
+
+                            <strong
+                                id="registeredSales"
+                                class="kpi-value"
+                            >
+                                —
+                            </strong>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card loading">
+                        <span
+                            class="material-symbols-outlined kpi-icon"
+                            aria-hidden="true"
+                        >
+                            inventory_2
+                        </span>
+
+                        <div>
+                            <h2>Unidades vendidas</h2>
+
+                            <strong
+                                id="soldUnits"
+                                class="kpi-value"
+                            >
+                                —
+                            </strong>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card loading">
+                        <span
+                            class="material-symbols-outlined kpi-icon"
+                            aria-hidden="true"
+                        >
+                            sell
+                        </span>
+
+                        <div>
+                            <h2>Ticket promedio</h2>
+
+                            <strong
+                                id="averageTicket"
+                                class="kpi-value"
+                            >
+                                —
+                            </strong>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Acessos rápidos -->
+                <section class="panel quick-access-panel">
+                    <h2>Accesos rápidos</h2>
+
+                    <div class="quick-actions">
+                        <button
+                            class="outline-action"
+                            type="button"
+                            data-coming-soon="El registro de ventas será implementado en la página de ventas."
+                        >
+                            <span
+                                class="material-symbols-outlined"
+                                aria-hidden="true"
+                            >
+                                shopping_cart
+                            </span>
+
+                            Registrar venta
+                        </button>
+
+                        <button
+                            class="outline-action"
+                            type="button"
+                            data-page="productos"
+                        >
+                            <span
+                                class="material-symbols-outlined"
+                                aria-hidden="true"
+                            >
+                                inventory_2
+                            </span>
+
+                            Agregar producto
+                        </button>
+
+                        <button
+                            class="outline-action"
+                            type="button"
+                            data-coming-soon="El registro de compras será implementado posteriormente."
+                        >
+                            <span
+                                class="material-symbols-outlined"
+                                aria-hidden="true"
+                            >
+                                deployed_code
+                            </span>
+
+                            Registrar compra
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Tabelas do dashboard -->
+                <section class="dashboard-grid">
+                    <article class="panel data-panel">
+                        <h2>Ventas recientes</h2>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">
+                                            N.º venta
+                                        </th>
+                                        <th scope="col">Total</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="recentSalesBody">
+                                    <tr>
+                                        <td
+                                            colspan="3"
+                                            class="table-message"
+                                        >
+                                            Cargando ventas...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button
+                            class="text-action"
+                            type="button"
+                            data-coming-soon="La página completa de ventas será implementada en la próxima etapa."
+                        >
+                            Ver ventas
+                        </button>
+                    </article>
+
+                    <article class="panel data-panel">
+                        <h2>Alertas de stock</h2>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">
+                                            Producto
+                                        </th>
+                                        <th scope="col">
+                                            Stock actual
+                                        </th>
+                                        <th scope="col">
+                                            Mínimo
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="stockAlertsBody">
+                                    <tr>
+                                        <td
+                                            colspan="3"
+                                            class="table-message"
+                                        >
+                                            Cargando inventario...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button
+                            class="text-action"
+                            type="button"
+                            data-coming-soon="La página de inventario será implementada posteriormente."
+                        >
+                            Ver inventario
+                        </button>
+                    </article>
+                </section>
+
+                <footer class="page-footer">
+                    Prototipo visual · Información ficticia
+                </footer>
+            </section>
+
+            <!-- ==================================================
+                 PÁGINA DE PRODUTOS
+                 ================================================== -->
+
+            <section
+                id="productsPage"
+                class="app-page"
+                data-page-content="productos"
+                hidden
+            >
+                <!-- Cabeçalho -->
+                <section class="product-page-header">
+                    <div class="page-heading">
+                        <h1>Productos</h1>
+
+                        <p>
+                            Catálogo de productos de FarmaVital
+                        </p>
+
+                        <span class="demo-badge">
+                            Datos de demostración
+                        </span>
+                    </div>
 
                     <button
+                        id="exportProductsButton"
                         class="export-button"
                         type="button"
-                        data-coming-soon="La exportación Excel/CSV será implementada en una próxima etapa."
                     >
                         <span
                             class="material-symbols-outlined"
@@ -205,202 +496,369 @@
                         </span>
 
                         <span>
-                            <strong>Exportar datos</strong>
-                            <small>Excel / CSV</small>
+                            <strong>
+                                Exportar productos
+                            </strong>
+
+                            <small>Archivo CSV</small>
                         </span>
                     </button>
-                </div>
-            </section>
+                </section>
 
-            <!-- Indicadores -->
-            <section class="kpi-grid" aria-label="Indicadores comerciales">
-                <article class="kpi-card loading">
-                    <span
-                        class="material-symbols-outlined kpi-icon"
-                        aria-hidden="true"
-                    >
-                        shopping_cart
-                    </span>
+                <!-- Filtros -->
+                <section
+                    class="product-toolbar"
+                    aria-label="Filtros de productos"
+                >
+                    <label class="search-control">
+                        <span class="sr-only">
+                            Buscar producto
+                        </span>
 
-                    <div>
-                        <h2>Ventas totales</h2>
-                        <strong id="totalSales" class="kpi-value">
-                            —
-                        </strong>
-                    </div>
-                </article>
+                        <span
+                            class="material-symbols-outlined"
+                            aria-hidden="true"
+                        >
+                            search
+                        </span>
 
-                <article class="kpi-card loading">
-                    <span
-                        class="material-symbols-outlined kpi-icon"
-                        aria-hidden="true"
-                    >
-                        receipt_long
-                    </span>
+                        <input
+                            id="productSearch"
+                            type="search"
+                            placeholder="Buscar por código o nombre"
+                            autocomplete="off"
+                        >
+                    </label>
 
-                    <div>
-                        <h2>Ventas registradas</h2>
-                        <strong id="registeredSales" class="kpi-value">
-                            —
-                        </strong>
-                    </div>
-                </article>
+                    <label>
+                        <span class="sr-only">
+                            Filtrar por categoría
+                        </span>
 
-                <article class="kpi-card loading">
-                    <span
-                        class="material-symbols-outlined kpi-icon"
-                        aria-hidden="true"
-                    >
-                        inventory_2
-                    </span>
+                        <select id="categoryFilter">
+                            <option value="">
+                                Todas las categorías
+                            </option>
+                        </select>
+                    </label>
 
-                    <div>
-                        <h2>Unidades vendidas</h2>
-                        <strong id="soldUnits" class="kpi-value">
-                            —
-                        </strong>
-                    </div>
-                </article>
+                    <label>
+                        <span class="sr-only">
+                            Filtrar por estado
+                        </span>
 
-                <article class="kpi-card loading">
-                    <span
-                        class="material-symbols-outlined kpi-icon"
-                        aria-hidden="true"
-                    >
-                        sell
-                    </span>
+                        <select id="statusFilter">
+                            <option value="">
+                                Todos los estados
+                            </option>
 
-                    <div>
-                        <h2>Ticket promedio</h2>
-                        <strong id="averageTicket" class="kpi-value">
-                            —
-                        </strong>
-                    </div>
-                </article>
-            </section>
+                            <option value="Activo">
+                                Activos
+                            </option>
 
-            <!-- Acessos rápidos -->
-            <section class="panel quick-access-panel">
-                <h2>Accesos rápidos</h2>
+                            <option value="Inactivo">
+                                Inactivos
+                            </option>
+                        </select>
+                    </label>
 
-                <div class="quick-actions">
                     <button
-                        class="outline-action"
+                        id="newProductButton"
+                        class="primary-action"
                         type="button"
-                        data-coming-soon="El registro de ventas será implementado en la página de ventas."
                     >
                         <span
                             class="material-symbols-outlined"
                             aria-hidden="true"
                         >
-                            shopping_cart
+                            add
                         </span>
 
-                        Registrar venta
+                        Nuevo producto
                     </button>
+                </section>
 
-                    <button
-                        class="outline-action"
-                        type="button"
-                        data-coming-soon="El formulario de productos será implementado en la próxima etapa."
-                    >
+                <!-- Listagem -->
+                <section class="panel product-list-panel">
+                    <div class="panel-title-row">
+                        <h2>Listado de productos</h2>
+
                         <span
-                            class="material-symbols-outlined"
-                            aria-hidden="true"
+                            id="productCount"
+                            class="record-count"
                         >
-                            inventory_2
+                            Cargando...
                         </span>
+                    </div>
 
-                        Agregar producto
-                    </button>
-
-                    <button
-                        class="outline-action"
-                        type="button"
-                        data-coming-soon="El registro de compras será implementado posteriormente."
+                    <div
+                        class="table-wrapper product-table-wrapper"
                     >
-                        <span
-                            class="material-symbols-outlined"
-                            aria-hidden="true"
-                        >
-                            deployed_code
-                        </span>
-
-                        Registrar compra
-                    </button>
-                </div>
-            </section>
-
-            <!-- Tabelas -->
-            <section class="dashboard-grid">
-                <article class="panel data-panel">
-                    <h2>Ventas recientes</h2>
-
-                    <div class="table-wrapper">
-                        <table>
+                        <table class="product-table">
                             <thead>
                                 <tr>
-                                    <th scope="col">Fecha</th>
-                                    <th scope="col">N.º venta</th>
-                                    <th scope="col">Total</th>
+                                    <th scope="col">
+                                        Código
+                                    </th>
+
+                                    <th scope="col">
+                                        Producto
+                                    </th>
+
+                                    <th scope="col">
+                                        Categoría
+                                    </th>
+
+                                    <th scope="col">
+                                        Costo CLP
+                                    </th>
+
+                                    <th scope="col">
+                                        Precio CLP
+                                    </th>
+
+                                    <th scope="col">
+                                        Stock
+                                    </th>
+
+                                    <th scope="col">
+                                        Estado
+                                    </th>
+
+                                    <th scope="col">
+                                        Acción
+                                    </th>
                                 </tr>
                             </thead>
 
-                            <tbody id="recentSalesBody">
+                            <tbody id="productTableBody">
                                 <tr>
-                                    <td colspan="3" class="table-message">
-                                        Cargando ventas...
+                                    <td
+                                        colspan="8"
+                                        class="table-message"
+                                    >
+                                        Cargando productos...
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                </section>
 
-                    <button
-                        class="text-action"
-                        type="button"
-                        data-coming-soon="La página completa de ventas será implementada en la próxima etapa."
-                    >
-                        Ver ventas
-                    </button>
-                </article>
+                <!-- Formulário -->
+                <section
+                    id="productFormPanel"
+                    class="panel product-form-panel"
+                >
+                    <div class="panel-title-row">
+                        <div>
+                            <h2 id="productFormTitle">
+                                Nuevo producto
+                            </h2>
 
-                <article class="panel data-panel">
-                    <h2>Alertas de stock</h2>
+                            <p class="form-subtitle">
+                                Los cambios se mantendrán
+                                durante esta sesión.
+                            </p>
+                        </div>
 
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th scope="col">Producto</th>
-                                    <th scope="col">Stock actual</th>
-                                    <th scope="col">Mínimo</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="stockAlertsBody">
-                                <tr>
-                                    <td colspan="3" class="table-message">
-                                        Cargando inventario...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <span
+                            id="formModeBadge"
+                            class="form-mode-badge"
+                        >
+                            Nuevo
+                        </span>
                     </div>
 
-                    <button
-                        class="text-action"
-                        type="button"
-                        data-coming-soon="La página de inventario será implementada posteriormente."
-                    >
-                        Ver inventario
-                    </button>
-                </article>
-            </section>
+                    <form id="productForm" novalidate>
+                        <div class="product-form-grid">
+                            <label class="form-field">
+                                <span>Código único</span>
 
-            <footer class="page-footer">
-                Prototipo visual · Información ficticia
-            </footer>
+                                <input
+                                    id="productCode"
+                                    name="productCode"
+                                    type="text"
+                                    maxlength="20"
+                                    required
+                                >
+                            </label>
+
+                            <label class="form-field">
+                                <span>Nombre</span>
+
+                                <input
+                                    id="productName"
+                                    name="productName"
+                                    type="text"
+                                    placeholder="Nombre del producto"
+                                    required
+                                >
+                            </label>
+
+                            <label class="form-field">
+                                <span>Categoría</span>
+
+                                <select
+                                    id="productCategory"
+                                    name="productCategory"
+                                    required
+                                >
+                                    <option value="">
+                                        Seleccionar
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label class="form-field">
+                                <span>Presentación</span>
+
+                                <input
+                                    id="productPresentation"
+                                    name="productPresentation"
+                                    type="text"
+                                    placeholder="Ej.: caja de 30 unidades"
+                                    required
+                                >
+                            </label>
+
+                            <label class="form-field">
+                                <span>Proveedor</span>
+
+                                <select
+                                    id="productSupplier"
+                                    name="productSupplier"
+                                    required
+                                >
+                                    <option value="">
+                                        Seleccionar
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label class="form-field">
+                                <span>Estado</span>
+
+                                <select
+                                    id="productStatus"
+                                    name="productStatus"
+                                    required
+                                >
+                                    <option value="Activo">
+                                        Activo
+                                    </option>
+
+                                    <option value="Inactivo">
+                                        Inactivo
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label class="form-field">
+                                <span>
+                                    Costo unitario (CLP)
+                                </span>
+
+                                <input
+                                    id="productCost"
+                                    name="productCost"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value="0"
+                                    required
+                                >
+                            </label>
+
+                            <label class="form-field">
+                                <span>
+                                    Precio de venta (CLP)
+                                </span>
+
+                                <input
+                                    id="productPrice"
+                                    name="productPrice"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value="0"
+                                    required
+                                >
+                            </label>
+
+                            <label class="form-field">
+                                <span>Stock mínimo</span>
+
+                                <input
+                                    id="productMinimumStock"
+                                    name="productMinimumStock"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value="0"
+                                    required
+                                >
+                            </label>
+                        </div>
+
+                        <div class="form-notes">
+                            <p>
+                                Stock actual:
+
+                                <strong id="currentStockText">
+                                    0 unidades
+                                </strong>.
+
+                                Se actualiza desde Compras e
+                                inventario.
+                            </p>
+
+                            <p>
+                                El código debe ser único y los
+                                montos deben ser iguales o mayores
+                                a cero.
+                            </p>
+                        </div>
+
+                        <div
+                            id="formError"
+                            class="form-error"
+                            role="alert"
+                            hidden
+                        ></div>
+
+                        <div class="form-actions">
+                            <button
+                                class="primary-action save-product-button"
+                                type="submit"
+                            >
+                                Guardar producto
+                            </button>
+
+                            <button
+                                id="cancelProductButton"
+                                class="secondary-action"
+                                type="button"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                id="deactivateProductButton"
+                                class="neutral-action"
+                                type="button"
+                                disabled
+                            >
+                                Desactivar producto
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <footer class="page-footer">
+                    Prototipo visual · Información ficticia
+                </footer>
+            </section>
         </main>
     </div>
 
@@ -413,7 +871,7 @@
         tabindex="-1"
     ></button>
 
-    <!-- Mensagens temporárias -->
+    <!-- Mensagens -->
     <div
         id="notification"
         class="notification"
