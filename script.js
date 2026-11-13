@@ -33,7 +33,7 @@ const stockAlertsBody = document.querySelector(
     "#stockAlertsBody"
 );
 
-const periodOption = document.querySelector("#periodOption");
+const periodSelector = document.querySelector("#periodSelector");
 const notification = document.querySelector("#notification");
 
 const menuButton = document.querySelector("#menuButton");
@@ -175,6 +175,7 @@ let filteredProducts = [];
 let editingProductId = null;
 let productsLoaded = false;
 let dashboardLoaded = false;
+let dashboardMonths = [];
 let sales = [];
 let filteredSales = [];
 let salesLoaded = false;
@@ -186,11 +187,13 @@ let inventory = [];
 let purchasesLoaded = false;
 let marginSales = [];
 let marginsLoaded = false;
+let marginSalesPageNumber = 0;
 let promotions = [];
 let promotionsLoaded = false;
 let demoUsers = [];
 let usersLoaded = false;
 const salesPageSize = 25;
+const marginSalesPageSize = 30;
 
 
 /* ======================================================
@@ -401,7 +404,13 @@ function renderIndicators(indicators) {
         indicators.margen_bruto_clp ?? 0
     );
     leadingProductElement.textContent =
-        indicators.producto_lider ?? "—";
+        indicators.producto_lider
+            ? `${indicators.producto_lider} · ${
+                numberFormatter.format(
+                    indicators.unidades_producto_lider ?? 0
+                )
+            } unidades`
+            : "—";
 
     finishKpiLoading();
 }
@@ -554,52 +563,64 @@ function formatMonth(monthValue) {
 }
 
 
-function renderPeriod(monthlySales) {
-    if (
-        !Array.isArray(monthlySales) ||
-        monthlySales.length === 0
-    ) {
-        periodOption.textContent = "Período no disponible";
-        return;
+function renderPeriod(monthlySales, selectedMonth = "") {
+    if (dashboardMonths.length === 0) {
+        dashboardMonths = monthlySales
+            .map((item) => item.Mes)
+            .filter(Boolean);
     }
 
-    const months = monthlySales
-        .map((item) => item.Mes)
-        .filter(Boolean);
-
-    if (months.length === 1) {
-        periodOption.textContent = formatMonth(months[0]);
-        return;
-    }
-
-    const first = formatMonth(months[0]);
-    const last = formatMonth(months[months.length - 1]);
-
-    const firstParts = first.split(" ");
-    const lastParts = last.split(" ");
-
-    const firstMonth = firstParts[0];
-    const firstYear = firstParts.at(-1);
-    const lastMonth = lastParts[0];
-    const lastYear = lastParts.at(-1);
-
-    periodOption.textContent = firstYear === lastYear
-        ? `${firstMonth}–${lastMonth} ${lastYear}`
-        : `${first}–${last}`;
+    periodSelector.innerHTML = `
+        <option value="">Todo el período</option>
+        ${dashboardMonths.map((month) => `
+            <option value="${escapeHtml(month)}">
+                ${escapeHtml(formatMonth(month))}
+            </option>
+        `).join("")}
+    `;
+    periodSelector.value = selectedMonth;
+    periodSelector.disabled = dashboardMonths.length === 0;
 }
 
 
 async function loadDashboard() {
     try {
+        const selectedMonth = periodSelector.value;
+        const summaryParams = new URLSearchParams();
+        const salesParams = new URLSearchParams({
+            estado: "Completada",
+            limite: "3"
+        });
+
+        if (selectedMonth) {
+            const [year, month] = selectedMonth
+                .split("-")
+                .map(Number);
+            const lastDay = new Date(
+                Date.UTC(year, month, 0)
+            ).getUTCDate();
+            const from = `${selectedMonth}-01`;
+            const to = `${selectedMonth}-${String(lastDay).padStart(2, "0")}`;
+
+            summaryParams.set("desde", from);
+            summaryParams.set("hasta", to);
+            salesParams.set("desde", from);
+            salesParams.set("hasta", to);
+        }
+
+        const summaryUrl = selectedMonth
+            ? `/api/resumen?${summaryParams}`
+            : "/api/resumen";
         const [summary, salesResponse] = await Promise.all([
-            requestJson("/api/resumen"),
-            requestJson(
-                "/api/ventas?estado=Completada&limite=3"
-            )
+            requestJson(summaryUrl),
+            requestJson(`/api/ventas?${salesParams}`)
         ]);
 
         renderIndicators(summary.indicadores ?? {});
-        renderPeriod(summary.ventas_por_mes ?? []);
+        renderPeriod(
+            summary.ventas_por_mes ?? [],
+            selectedMonth
+        );
         renderStockAlerts(summary.alertas_stock ?? []);
         renderRecentSales(salesResponse.datos ?? []);
         renderMonthlySales(summary.ventas_por_mes ?? []);
@@ -632,6 +653,9 @@ async function loadDashboard() {
         );
     }
 }
+
+
+periodSelector.addEventListener("change", loadDashboard);
 
 
 /* ======================================================
@@ -1642,10 +1666,30 @@ function renderMarginLines() {
         );
     });
 
+    const pageCount = Math.max(
+        1,
+        Math.ceil(filtered.length / marginSalesPageSize)
+    );
+    marginSalesPageNumber = Math.min(
+        marginSalesPageNumber,
+        pageCount - 1
+    );
+    const start = marginSalesPageNumber * marginSalesPageSize;
+    const pageItems = filtered.slice(
+        start,
+        start + marginSalesPageSize
+    );
+
     document.querySelector("#marginLineCount").textContent =
         `${filtered.length} líneas`;
-    marginLinesBody.innerHTML = filtered.length
-        ? filtered.map((item) => `
+    document.querySelector("#marginPageInfo").textContent =
+        `Página ${marginSalesPageNumber + 1} de ${pageCount}`;
+    document.querySelector("#marginPreviousPage").disabled =
+        marginSalesPageNumber === 0;
+    document.querySelector("#marginNextPage").disabled =
+        marginSalesPageNumber >= pageCount - 1;
+    marginLinesBody.innerHTML = pageItems.length
+        ? pageItems.map((item) => `
             <tr>
                 <td>${formatDate(item.Fecha)}</td>
                 <td>${escapeHtml(item.ID_Venta)}</td>
@@ -1682,7 +1726,13 @@ function renderMarginSummaries(summary) {
     document.querySelector("#marginPercent").textContent =
         `${numberFormatter.format(marginPercent)}%`;
     document.querySelector("#marginLeader").textContent =
-        indicators.producto_lider ?? "—";
+        indicators.producto_lider
+            ? `${indicators.producto_lider} · ${
+                numberFormatter.format(
+                    indicators.unidades_producto_lider ?? 0
+                )
+            } unidades`
+            : "—";
 
     const categories = new Map();
     const productsByMargin = new Map();
@@ -2139,8 +2189,28 @@ document.querySelector("#exportPurchasesButton").addEventListener(
     exportCurrentPurchases
 );
 
-marginSearch.addEventListener("input", renderMarginLines);
-marginCategoryFilter.addEventListener("change", renderMarginLines);
+marginSearch.addEventListener("input", () => {
+    marginSalesPageNumber = 0;
+    renderMarginLines();
+});
+marginCategoryFilter.addEventListener("change", () => {
+    marginSalesPageNumber = 0;
+    renderMarginLines();
+});
+document.querySelector("#marginPreviousPage").addEventListener(
+    "click",
+    () => {
+        marginSalesPageNumber -= 1;
+        renderMarginLines();
+    }
+);
+document.querySelector("#marginNextPage").addEventListener(
+    "click",
+    () => {
+        marginSalesPageNumber += 1;
+        renderMarginLines();
+    }
+);
 document.querySelector("#exportMarginsButton").addEventListener(
     "click",
     exportMarginLines

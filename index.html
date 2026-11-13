@@ -225,7 +225,7 @@
                             class="period-select"
                             disabled
                         >
-                            <option id="periodOption">
+                            <option id="periodOption" value="">
                                 Cargando período...
                             </option>
                         </select>
@@ -393,7 +393,7 @@
                                 shopping_cart
                             </span>
 
-                            Registrar venta
+                            Consultar ventas
                         </button>
 
                         <button
@@ -423,7 +423,7 @@
                                 deployed_code
                             </span>
 
-                            Registrar compra
+                            Consultar compras
                         </button>
                     </div>
                 </section>
@@ -1220,6 +1220,11 @@
                             <thead><tr><th>Fecha</th><th>Venta</th><th>Producto</th><th>Categoría</th><th>Unidades</th><th>Precio unitario</th><th>Descuento</th><th>Total de línea</th><th>Costo unitario</th><th>Margen bruto</th></tr></thead>
                             <tbody id="marginLinesBody"><tr><td colspan="10" class="table-message">Cargando detalle...</td></tr></tbody>
                         </table>
+                    </div>
+                    <div class="pagination">
+                        <button id="marginPreviousPage" class="secondary-action" type="button">Anterior</button>
+                        <span id="marginPageInfo" class="record-count"></span>
+                        <button id="marginNextPage" class="secondary-action" type="button">Siguiente</button>
                     </div>
                 </section>
                 <footer class="page-footer">El margen bruto sigue el valor de referencia registrado en cada línea de venta.</footer>

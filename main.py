@@ -737,7 +737,16 @@ def listar_usuarios() -> dict:
     tags=["Dashboard"],
     summary="Calcular os indicadores comerciais"
 )
-def resumo() -> dict:
+def resumo(
+    desde: Optional[date] = Query(
+        default=None,
+        description="Data inicial do resumo."
+    ),
+    hasta: Optional[date] = Query(
+        default=None,
+        description="Data final do resumo."
+    )
+) -> dict:
     """
     Calcula os principais indicadores diretamente
     a partir dos registros do Excel.
@@ -759,6 +768,22 @@ def resumo() -> dict:
         .str.lower()
         == "completada"
     ].copy()
+
+    vendas_completadas["Fecha"] = pd.to_datetime(
+        vendas_completadas["Fecha"],
+        errors="coerce"
+    )
+
+    if desde:
+        vendas_completadas = vendas_completadas[
+            vendas_completadas["Fecha"] >= pd.Timestamp(desde)
+        ]
+
+    if hasta:
+        vendas_completadas = vendas_completadas[
+            vendas_completadas["Fecha"]
+            < pd.Timestamp(hasta) + pd.Timedelta(days=1)
+        ]
 
     ids_vendas_completadas = set(
         vendas_completadas["ID_Venta"].tolist()
@@ -849,11 +874,6 @@ def resumo() -> dict:
     # -----------------------------------------------------
     # VENDAS POR MÊS
     # -----------------------------------------------------
-
-    vendas_completadas["Fecha"] = pd.to_datetime(
-        vendas_completadas["Fecha"],
-        errors="coerce"
-    )
 
     vendas_completadas = vendas_completadas.dropna(
         subset=["Fecha"]
