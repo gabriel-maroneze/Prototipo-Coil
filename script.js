@@ -93,6 +93,9 @@ const deactivateProductButton = document.querySelector(
 const exportProductsButton = document.querySelector(
     "#exportProductsButton"
 );
+const exportSalesButton = document.querySelector(
+    "#exportSalesButton"
+);
 
 let notificationTimer;
 let products = [];
@@ -899,8 +902,67 @@ function deactivateCurrentProduct() {
 
 
 function escapeCsvValue(value) {
-    const text = String(value ?? "");
+    let text = String(value ?? "");
+
+    if (
+        typeof value === "string" &&
+        /^[\t\r ]*[=+\-@]/.test(text)
+    ) {
+        text = `'${text}`;
+    }
+
     return `"${text.replaceAll('"', '""')}"`;
+}
+
+
+async function exportSalesCsv() {
+    try {
+        const response = await requestJson("/api/ventas");
+        const sales = Array.isArray(response.datos)
+            ? response.datos
+            : [];
+
+        if (sales.length === 0) {
+            showNotification(
+                "No hay ventas disponibles para exportar."
+            );
+
+            return;
+        }
+
+        const columns = Object.keys(sales[0]);
+        const header = columns
+            .map(escapeCsvValue)
+            .join(";");
+        const rows = sales.map((sale) =>
+            columns
+                .map((column) => escapeCsvValue(sale[column]))
+                .join(";")
+        );
+        const csv = [header, ...rows].join("\r\n");
+        const blob = new Blob(
+            [`\uFEFF${csv}`],
+            { type: "text/csv;charset=utf-8" }
+        );
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "ventas_farmavital.csv";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+
+        showNotification(
+            `Se exportaron ${sales.length} ventas a CSV.`
+        );
+    } catch (error) {
+        console.error("Error al exportar ventas:", error);
+        showNotification(
+            "No fue posible exportar las ventas."
+        );
+    }
 }
 
 
@@ -1049,6 +1111,10 @@ deactivateProductButton.addEventListener(
 exportProductsButton.addEventListener(
     "click",
     exportProductsCsv
+);
+exportSalesButton.addEventListener(
+    "click",
+    exportSalesCsv
 );
 
 productForm.addEventListener("submit", saveProduct);
