@@ -83,7 +83,7 @@
             <button
                 class="nav-item"
                 type="button"
-                data-coming-soon="La página de ventas será implementada en la próxima etapa."
+                data-page="ventas"
             >
                 <span
                     class="material-symbols-outlined"
@@ -98,7 +98,7 @@
             <button
                 class="nav-item"
                 type="button"
-                data-coming-soon="La página de compras e inventario será implementada posteriormente."
+                data-page="compras"
             >
                 <span
                     class="material-symbols-outlined"
@@ -113,7 +113,7 @@
             <button
                 class="nav-item"
                 type="button"
-                data-coming-soon="La página de costos y márgenes será implementada posteriormente."
+                data-page="costos"
             >
                 <span
                     class="material-symbols-outlined"
@@ -128,7 +128,7 @@
             <button
                 class="nav-item"
                 type="button"
-                data-coming-soon="La página de promociones será implementada posteriormente."
+                data-page="promociones"
             >
                 <span
                     class="material-symbols-outlined"
@@ -138,6 +138,21 @@
                 </span>
 
                 <span>06 Promociones y acciones</span>
+            </button>
+
+            <button
+                class="nav-item"
+                type="button"
+                data-page="usuarios"
+            >
+                <span
+                    class="material-symbols-outlined"
+                    aria-hidden="true"
+                >
+                    group
+                </span>
+
+                <span>07 Usuarios demo</span>
             </button>
         </nav>
 
@@ -319,6 +334,46 @@
                             </strong>
                         </div>
                     </article>
+
+                    <article class="kpi-card loading">
+                        <span
+                            class="material-symbols-outlined kpi-icon"
+                            aria-hidden="true"
+                        >
+                            finance
+                        </span>
+
+                        <div>
+                            <h2>Margen bruto</h2>
+
+                            <strong
+                                id="grossMargin"
+                                class="kpi-value"
+                            >
+                                —
+                            </strong>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card loading">
+                        <span
+                            class="material-symbols-outlined kpi-icon"
+                            aria-hidden="true"
+                        >
+                            workspace_premium
+                        </span>
+
+                        <div>
+                            <h2>Producto líder</h2>
+
+                            <strong
+                                id="leadingProduct"
+                                class="kpi-value kpi-value-text"
+                            >
+                                —
+                            </strong>
+                        </div>
+                    </article>
                 </section>
 
                 <!-- Acessos rápidos -->
@@ -329,7 +384,7 @@
                         <button
                             class="outline-action"
                             type="button"
-                            data-coming-soon="El registro de ventas será implementado en la página de ventas."
+                            data-page="ventas"
                         >
                             <span
                                 class="material-symbols-outlined"
@@ -359,7 +414,7 @@
                         <button
                             class="outline-action"
                             type="button"
-                            data-coming-soon="El registro de compras será implementado posteriormente."
+                            data-page="compras"
                         >
                             <span
                                 class="material-symbols-outlined"
@@ -406,7 +461,7 @@
                         <button
                             class="text-action"
                             type="button"
-                            data-coming-soon="La página completa de ventas será implementada en la próxima etapa."
+                            data-page="ventas"
                         >
                             Ver ventas
                         </button>
@@ -447,10 +502,58 @@
                         <button
                             class="text-action"
                             type="button"
-                            data-coming-soon="La página de inventario será implementada posteriormente."
+                            data-page="compras"
                         >
                             Ver inventario
                         </button>
+                    </article>
+                </section>
+
+                <section class="dashboard-grid dashboard-analysis">
+                    <article class="panel data-panel">
+                        <h2>Ventas por mes</h2>
+
+                        <div
+                            id="monthlySalesChart"
+                            class="bar-chart"
+                            role="list"
+                            aria-label="Ingresos por mes"
+                        ></div>
+                    </article>
+
+                    <article class="panel data-panel">
+                        <h2>Ventas por categoría</h2>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Categoría</th>
+                                        <th scope="col">Unidades</th>
+                                        <th scope="col">Ventas</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="categorySalesBody"></tbody>
+                            </table>
+                        </div>
+                    </article>
+
+                    <article class="panel data-panel">
+                        <h2>Productos más vendidos</h2>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Producto</th>
+                                        <th scope="col">Unidades</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="productRankingBody"></tbody>
+                            </table>
+                        </div>
                     </article>
                 </section>
 
@@ -610,6 +713,14 @@
                                     </th>
 
                                     <th scope="col">
+                                        Presentación
+                                    </th>
+
+                                    <th scope="col">
+                                        Proveedor
+                                    </th>
+
+                                    <th scope="col">
                                         Costo CLP
                                     </th>
 
@@ -619,6 +730,10 @@
 
                                     <th scope="col">
                                         Stock
+                                    </th>
+
+                                    <th scope="col">
+                                        Stock mínimo
                                     </th>
 
                                     <th scope="col">
@@ -634,7 +749,7 @@
                             <tbody id="productTableBody">
                                 <tr>
                                     <td
-                                        colspan="8"
+                                        colspan="11"
                                         class="table-message"
                                     >
                                         Cargando productos...
@@ -858,6 +973,324 @@
                 <footer class="page-footer">
                     Prototipo visual · Información ficticia
                 </footer>
+            </section>
+
+            <!-- ==================================================
+                 PÁGINA DE VENTAS
+                 ================================================== -->
+
+            <section
+                id="salesPage"
+                class="app-page"
+                data-page-content="ventas"
+                hidden
+            >
+                <section class="page-header">
+                    <div class="page-heading">
+                        <h1>Ventas</h1>
+                        <p>Historial y detalle de ventas</p>
+                        <span class="demo-badge">Datos de demostración</span>
+                    </div>
+
+                    <button
+                        id="exportSalesPageButton"
+                        class="export-button"
+                        type="button"
+                    >
+                        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+                        <span><strong>Exportar ventas</strong><small>Archivo CSV</small></span>
+                    </button>
+                </section>
+
+                <section class="data-toolbar" aria-label="Filtros de ventas">
+                    <label class="form-field">
+                        <span>Desde</span>
+                        <input id="salesDateFrom" type="date">
+                    </label>
+                    <label class="form-field">
+                        <span>Hasta</span>
+                        <input id="salesDateTo" type="date">
+                    </label>
+                    <label class="form-field">
+                        <span>Medio de pago</span>
+                        <select id="salesPaymentFilter">
+                            <option value="">Todos los medios</option>
+                        </select>
+                    </label>
+                    <label class="form-field">
+                        <span>Estado</span>
+                        <select id="salesStatusFilter">
+                            <option value="">Todos los estados</option>
+                        </select>
+                    </label>
+                    <button id="resetSalesFilters" class="secondary-action" type="button">Limpiar</button>
+                </section>
+
+                <section class="panel data-list-panel">
+                    <div class="panel-title-row">
+                        <h2>Registro de ventas</h2>
+                        <span id="salesCount" class="record-count">Cargando...</span>
+                    </div>
+                    <div class="table-wrapper data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th><th>N.º venta</th><th>Usuario</th>
+                                    <th>Medio de pago</th><th>Subtotal</th>
+                                    <th>Descuento</th><th>Total</th><th>Estado</th>
+                                    <th>Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody">
+                                <tr><td colspan="9" class="table-message">Cargando ventas...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <button id="salesPreviousPage" class="secondary-action" type="button">Anterior</button>
+                        <span id="salesPageInfo" class="record-count"></span>
+                        <button id="salesNextPage" class="secondary-action" type="button">Siguiente</button>
+                    </div>
+                </section>
+
+                <section id="saleDetailPanel" class="panel detail-panel" hidden>
+                    <div class="panel-title-row">
+                        <h2 id="saleDetailTitle">Detalle de venta</h2>
+                        <button id="closeSaleDetail" class="secondary-action" type="button">Cerrar</button>
+                    </div>
+                    <div id="saleDetailSummary" class="detail-summary"></div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th><th>Categoría</th><th>Cantidad</th>
+                                    <th>Precio unitario</th><th>Descuento</th>
+                                    <th>Total línea</th><th>Margen bruto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="saleDetailBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <footer class="page-footer">Datos ficticios para demostración.</footer>
+            </section>
+
+            <!-- ==================================================
+                 PÁGINA DE COMPRAS E INVENTÁRIO
+                 ================================================== -->
+
+            <section
+                id="purchasesPage"
+                class="app-page"
+                data-page-content="compras"
+                hidden
+            >
+                <section class="page-header">
+                    <div class="page-heading">
+                        <h1>Compras e inventario</h1>
+                        <p>Entradas, fornecedores e níveis de estoque</p>
+                        <span class="demo-badge">Datos de demostración</span>
+                    </div>
+
+                    <button id="exportPurchasesButton" class="export-button" type="button">
+                        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+                        <span><strong>Exportar compras</strong><small>Archivo CSV</small></span>
+                    </button>
+                </section>
+
+                <section class="kpi-grid compact-kpi-grid" aria-label="Indicadores de compras">
+                    <article class="kpi-card"><div><h2>Compras registradas</h2><strong id="purchaseCount" class="kpi-value">—</strong></div></article>
+                    <article class="kpi-card"><div><h2>Total comprado</h2><strong id="purchaseTotal" class="kpi-value">—</strong></div></article>
+                    <article class="kpi-card"><div><h2>Unidades compradas</h2><strong id="purchasedUnits" class="kpi-value">—</strong></div></article>
+                    <article class="kpi-card"><div><h2>Productos con stock bajo</h2><strong id="lowStockCount" class="kpi-value">—</strong></div></article>
+                </section>
+
+                <section class="data-toolbar" aria-label="Filtros de compras">
+                    <label class="form-field"><span>Desde</span><input id="purchaseDateFrom" type="date"></label>
+                    <label class="form-field"><span>Hasta</span><input id="purchaseDateTo" type="date"></label>
+                    <label class="form-field"><span>Proveedor</span><select id="purchaseSupplierFilter"><option value="">Todos los proveedores</option></select></label>
+                    <label class="form-field"><span>Estado</span><select id="purchaseStatusFilter"><option value="">Todos los estados</option></select></label>
+                    <button id="resetPurchaseFilters" class="secondary-action" type="button">Limpiar</button>
+                </section>
+
+                <section class="panel data-list-panel">
+                    <div class="panel-title-row">
+                        <h2>Historial de compras</h2>
+                        <span id="purchaseListCount" class="record-count">Cargando...</span>
+                    </div>
+                    <div class="table-wrapper data-table-wrapper">
+                        <table class="data-table">
+                            <thead><tr><th>Fecha</th><th>N.º compra</th><th>Proveedor</th><th>Estado</th><th>Total</th><th>Detalle</th></tr></thead>
+                            <tbody id="purchasesTableBody"><tr><td colspan="6" class="table-message">Cargando compras...</td></tr></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="purchaseDetailPanel" class="panel detail-panel" hidden>
+                    <div class="panel-title-row">
+                        <h2 id="purchaseDetailTitle">Detalle de compra</h2>
+                        <button id="closePurchaseDetail" class="secondary-action" type="button">Cerrar</button>
+                    </div>
+                    <div id="purchaseDetailSummary" class="detail-summary"></div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead><tr><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Costo unitario</th><th>Total de línea</th></tr></thead>
+                            <tbody id="purchaseDetailBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="panel data-list-panel">
+                    <div class="panel-title-row">
+                        <h2>Inventario por producto</h2>
+                        <span id="inventoryCount" class="record-count">Cargando...</span>
+                    </div>
+                    <div class="table-wrapper data-table-wrapper">
+                        <table class="data-table">
+                            <thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Presentación</th><th>Proveedor</th><th>Stock actual</th><th>Stock mínimo</th><th>Costo unitario</th><th>Precio de venta</th><th>Estado</th></tr></thead>
+                            <tbody id="inventoryTableBody"><tr><td colspan="10" class="table-message">Cargando inventario...</td></tr></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <footer class="page-footer">Los datos de inventario se leen del catálogo; el prototipo no registra movimientos.</footer>
+            </section>
+
+            <!-- ==================================================
+                 PÁGINA DE CUSTOS E MARGENS
+                 ================================================== -->
+
+            <section
+                id="costsPage"
+                class="app-page"
+                data-page-content="costos"
+                hidden
+            >
+                <section class="page-header">
+                    <div class="page-heading">
+                        <h1>Costos y márgenes</h1>
+                        <p>Rentabilidad calculada a partir del detalle de ventas</p>
+                        <span class="demo-badge">Datos de demostración</span>
+                    </div>
+                    <button id="exportMarginsButton" class="export-button" type="button">
+                        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+                        <span><strong>Exportar detalle</strong><small>Archivo CSV</small></span>
+                    </button>
+                </section>
+
+                <section class="kpi-grid compact-kpi-grid" aria-label="Indicadores de margen">
+                    <article class="kpi-card"><div><h2>Ingresos</h2><strong id="marginRevenue" class="kpi-value">—</strong></div></article>
+                    <article class="kpi-card"><div><h2>Margen bruto</h2><strong id="marginGross" class="kpi-value">—</strong></div></article>
+                    <article class="kpi-card"><div><h2>Margen bruto %</h2><strong id="marginPercent" class="kpi-value">—</strong></div></article>
+                    <article class="kpi-card"><div><h2>Producto líder</h2><strong id="marginLeader" class="kpi-value kpi-value-text">—</strong></div></article>
+                </section>
+
+                <section class="dashboard-grid">
+                    <article class="panel data-list-panel">
+                        <h2>Ventas y margen por categoría</h2>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead><tr><th>Categoría</th><th>Unidades</th><th>Ventas CLP</th><th>Margen bruto CLP</th></tr></thead>
+                                <tbody id="marginCategoryBody"></tbody>
+                            </table>
+                        </div>
+                    </article>
+                    <article class="panel data-list-panel">
+                        <h2>Productos líderes</h2>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead><tr><th>Producto</th><th>Categoría</th><th>Unidades</th><th>Margen bruto CLP</th></tr></thead>
+                                <tbody id="marginRankingBody"></tbody>
+                            </table>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="data-toolbar" aria-label="Filtros de detalle de ventas">
+                    <label class="search-control"><span class="sr-only">Buscar producto o venta</span><span class="material-symbols-outlined" aria-hidden="true">search</span><input id="marginSearch" type="search" placeholder="Producto o número de venta"></label>
+                    <label class="form-field"><span>Categoría</span><select id="marginCategoryFilter"><option value="">Todas las categorías</option></select></label>
+                    <span id="marginLineCount" class="record-count"></span>
+                </section>
+
+                <section class="panel data-list-panel">
+                    <div class="panel-title-row"><h2>Detalle de líneas vendidas</h2><span class="record-count">480 líneas en la planilla</span></div>
+                    <div class="table-wrapper data-table-wrapper">
+                        <table class="data-table">
+                            <thead><tr><th>Fecha</th><th>Venta</th><th>Producto</th><th>Categoría</th><th>Unidades</th><th>Precio unitario</th><th>Descuento</th><th>Total de línea</th><th>Costo unitario</th><th>Margen bruto</th></tr></thead>
+                            <tbody id="marginLinesBody"><tr><td colspan="10" class="table-message">Cargando detalle...</td></tr></tbody>
+                        </table>
+                    </div>
+                </section>
+                <footer class="page-footer">El margen bruto sigue el valor de referencia registrado en cada línea de venta.</footer>
+            </section>
+
+            <!-- ==================================================
+                 PÁGINA DE PROMOÇÕES
+                 ================================================== -->
+
+            <section
+                id="promotionsPage"
+                class="app-page"
+                data-page-content="promociones"
+                hidden
+            >
+                <section class="page-header">
+                    <div class="page-heading">
+                        <h1>Promociones y acciones</h1>
+                        <p>Reglas promocionales registradas en la planilla</p>
+                        <span class="demo-badge">Datos de demostración</span>
+                    </div>
+                    <button id="exportPromotionsButton" class="export-button" type="button">
+                        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+                        <span><strong>Exportar promociones</strong><small>Archivo CSV</small></span>
+                    </button>
+                </section>
+                <section class="data-toolbar" aria-label="Filtros de promociones">
+                    <label class="form-field"><span>Estado</span><select id="promotionStatusFilter"><option value="">Todos los estados</option></select></label>
+                    <span id="promotionCount" class="record-count"></span>
+                </section>
+                <section class="panel data-list-panel">
+                    <div class="table-wrapper data-table-wrapper">
+                        <table class="data-table">
+                            <thead><tr><th>Código</th><th>Promoción</th><th>Tipo</th><th>Descuento</th><th>Inicio</th><th>Fin</th><th>Aplica a</th><th>Estado</th></tr></thead>
+                            <tbody id="promotionsTableBody"><tr><td colspan="8" class="table-message">Cargando promociones...</td></tr></tbody>
+                        </table>
+                    </div>
+                </section>
+                <footer class="page-footer">La planilla contiene reglas de promoción; el prototipo no aplica descuentos automáticamente a nuevas ventas.</footer>
+            </section>
+
+            <!-- ==================================================
+                 PÁGINA DE USUÁRIOS
+                 ================================================== -->
+
+            <section
+                id="usersPage"
+                class="app-page"
+                data-page-content="usuarios"
+                hidden
+            >
+                <section class="page-header">
+                    <div class="page-heading">
+                        <h1>Usuarios de demostración</h1>
+                        <p>Roles de referencia incluidos en la planilla</p>
+                        <span class="demo-badge">Datos de demostración</span>
+                    </div>
+                </section>
+                <section class="panel data-list-panel">
+                    <div class="panel-title-row">
+                        <h2>Usuarios</h2>
+                        <span id="usersCount" class="record-count"></span>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead><tr><th>ID</th><th>Nombre demo</th><th>Rol</th><th>Estado</th></tr></thead>
+                            <tbody id="usersTableBody"><tr><td colspan="4" class="table-message">Cargando usuarios...</td></tr></tbody>
+                        </table>
+                    </div>
+                </section>
+                <p class="form-notes">Estos registros no contienen credenciales ni implementan autenticación o permisos.</p>
             </section>
         </main>
     </div>

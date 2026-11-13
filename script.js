@@ -21,6 +21,10 @@ const soldUnitsElement = document.querySelector("#soldUnits");
 const averageTicketElement = document.querySelector(
     "#averageTicket"
 );
+const grossMarginElement = document.querySelector("#grossMargin");
+const leadingProductElement = document.querySelector(
+    "#leadingProduct"
+);
 
 const recentSalesBody = document.querySelector(
     "#recentSalesBody"
@@ -96,12 +100,97 @@ const exportProductsButton = document.querySelector(
 const exportSalesButton = document.querySelector(
     "#exportSalesButton"
 );
+const exportSalesPageButton = document.querySelector(
+    "#exportSalesPageButton"
+);
+
+const monthlySalesChart = document.querySelector(
+    "#monthlySalesChart"
+);
+const categorySalesBody = document.querySelector(
+    "#categorySalesBody"
+);
+const productRankingBody = document.querySelector(
+    "#productRankingBody"
+);
+
+const salesDateFrom = document.querySelector("#salesDateFrom");
+const salesDateTo = document.querySelector("#salesDateTo");
+const salesPaymentFilter = document.querySelector(
+    "#salesPaymentFilter"
+);
+const salesStatusFilter = document.querySelector(
+    "#salesStatusFilter"
+);
+const salesTableBody = document.querySelector("#salesTableBody");
+const salesCount = document.querySelector("#salesCount");
+const salesPageInfo = document.querySelector("#salesPageInfo");
+const saleDetailPanel = document.querySelector("#saleDetailPanel");
+const saleDetailBody = document.querySelector("#saleDetailBody");
+
+const purchaseDateFrom = document.querySelector("#purchaseDateFrom");
+const purchaseDateTo = document.querySelector("#purchaseDateTo");
+const purchaseSupplierFilter = document.querySelector(
+    "#purchaseSupplierFilter"
+);
+const purchaseStatusFilter = document.querySelector(
+    "#purchaseStatusFilter"
+);
+const purchasesTableBody = document.querySelector(
+    "#purchasesTableBody"
+);
+const purchaseDetailPanel = document.querySelector(
+    "#purchaseDetailPanel"
+);
+const purchaseDetailBody = document.querySelector(
+    "#purchaseDetailBody"
+);
+const inventoryTableBody = document.querySelector(
+    "#inventoryTableBody"
+);
+
+const marginSearch = document.querySelector("#marginSearch");
+const marginCategoryFilter = document.querySelector(
+    "#marginCategoryFilter"
+);
+const marginLinesBody = document.querySelector("#marginLinesBody");
+const marginCategoryBody = document.querySelector(
+    "#marginCategoryBody"
+);
+const marginRankingBody = document.querySelector(
+    "#marginRankingBody"
+);
+
+const promotionStatusFilter = document.querySelector(
+    "#promotionStatusFilter"
+);
+const promotionsTableBody = document.querySelector(
+    "#promotionsTableBody"
+);
+const usersTableBody = document.querySelector("#usersTableBody");
 
 let notificationTimer;
 let products = [];
 let filteredProducts = [];
 let editingProductId = null;
 let productsLoaded = false;
+let dashboardLoaded = false;
+let sales = [];
+let filteredSales = [];
+let salesLoaded = false;
+let salesPageNumber = 0;
+let purchases = [];
+let filteredPurchases = [];
+let purchaseDetails = [];
+let inventory = [];
+let purchasesLoaded = false;
+let marginSales = [];
+let marginsLoaded = false;
+let promotions = [];
+let promotionsLoaded = false;
+let demoUsers = [];
+let usersLoaded = false;
+const salesPageSize = 25;
 
 
 /* ======================================================
@@ -183,8 +272,17 @@ function openSidebar() {
 
 
 function navigateToPage(pageName, updateHistory = true) {
-    const validPage = pageName === "productos"
-        ? "productos"
+    const validPages = [
+        "inicio",
+        "productos",
+        "ventas",
+        "compras",
+        "costos",
+        "promociones",
+        "usuarios"
+    ];
+    const validPage = validPages.includes(pageName)
+        ? pageName
         : "inicio";
 
     document
@@ -209,21 +307,28 @@ function navigateToPage(pageName, updateHistory = true) {
             }
         });
 
-    if (validPage === "productos") {
-        loadProducts();
+    const pageLoaders = {
+        productos: loadProducts,
+        ventas: loadSales,
+        compras: loadPurchases,
+        costos: loadMargins,
+        promociones: loadPromotions,
+        usuarios: loadUsers
+    };
 
-        if (updateHistory) {
-            history.pushState(
-                { page: "productos" },
-                "",
-                "/#productos"
-            );
-        }
-    } else if (updateHistory) {
+    if (pageLoaders[validPage]) {
+        pageLoaders[validPage]();
+    }
+
+    if (updateHistory) {
+        const destination = validPage === "inicio"
+            ? "/"
+            : `/#${validPage}`;
+
         history.pushState(
-            { page: "inicio" },
+            { page: validPage },
             "",
-            "/"
+            destination
         );
     }
 
@@ -259,9 +364,7 @@ window.addEventListener("keydown", (event) => {
 
 
 window.addEventListener("popstate", () => {
-    const page = window.location.hash === "#productos"
-        ? "productos"
-        : "inicio";
+    const page = window.location.hash.slice(1) || "inicio";
 
     navigateToPage(page, false);
 });
@@ -294,6 +397,11 @@ function renderIndicators(indicators) {
     averageTicketElement.textContent = currencyFormatter.format(
         indicators.ticket_promedio_clp ?? 0
     );
+    grossMarginElement.textContent = currencyFormatter.format(
+        indicators.margen_bruto_clp ?? 0
+    );
+    leadingProductElement.textContent =
+        indicators.producto_lider ?? "—";
 
     finishKpiLoading();
 }
@@ -369,6 +477,68 @@ function renderStockAlerts(alerts) {
 }
 
 
+function renderMonthlySales(monthlySales) {
+    if (!monthlySales.length) {
+        monthlySalesChart.innerHTML = `
+            <p class="table-message">No hay ventas para mostrar.</p>
+        `;
+
+        return;
+    }
+
+    const maximum = Math.max(
+        ...monthlySales.map((item) => Number(item.Ventas_CLP) || 0),
+        1
+    );
+
+    monthlySalesChart.innerHTML = monthlySales
+        .map((item) => {
+            const amount = Number(item.Ventas_CLP) || 0;
+            const width = Math.max(2, amount / maximum * 100);
+
+            return `
+                <div class="bar-chart-row" role="listitem">
+                    <span>${escapeHtml(formatMonth(item.Mes))}</span>
+                    <div class="bar-chart-track">
+                        <div
+                            class="bar-chart-fill"
+                            style="width: ${width}%"
+                            aria-label="${currencyFormatter.format(amount)}"
+                        ></div>
+                    </div>
+                    <strong>${currencyFormatter.format(amount)}</strong>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+
+function renderCategorySales(categories) {
+    categorySalesBody.innerHTML = categories.length
+        ? categories.map((item) => `
+            <tr>
+                <td>${escapeHtml(item.Categoria ?? "Sin categoría")}</td>
+                <td>${numberFormatter.format(item.Unidades ?? 0)}</td>
+                <td>${currencyFormatter.format(item.Ventas_CLP ?? 0)}</td>
+            </tr>
+        `).join("")
+        : `<tr><td colspan="3" class="table-message">No hay datos.</td></tr>`;
+}
+
+
+function renderProductRanking(ranking) {
+    productRankingBody.innerHTML = ranking.length
+        ? ranking.slice(0, 5).map((item) => `
+            <tr>
+                <td>${escapeHtml(item.Nombre_Producto ?? "—")}</td>
+                <td>${numberFormatter.format(item.Unidades_Vendidas ?? 0)}</td>
+            </tr>
+        `).join("")
+        : `<tr><td colspan="2" class="table-message">No hay datos.</td></tr>`;
+}
+
+
 function formatMonth(monthValue) {
     const date = new Date(`${monthValue}-01T00:00:00Z`);
 
@@ -432,6 +602,10 @@ async function loadDashboard() {
         renderPeriod(summary.ventas_por_mes ?? []);
         renderStockAlerts(summary.alertas_stock ?? []);
         renderRecentSales(salesResponse.datos ?? []);
+        renderMonthlySales(summary.ventas_por_mes ?? []);
+        renderCategorySales(summary.ventas_por_categoria ?? []);
+        renderProductRanking(summary.ranking_productos ?? []);
+        dashboardLoaded = true;
     } catch (error) {
         console.error("Error al cargar el dashboard:", error);
 
@@ -579,7 +753,7 @@ function renderProductTable() {
     if (filteredProducts.length === 0) {
         productTableBody.innerHTML = `
             <tr>
-                <td colspan="8" class="table-message">
+                <td colspan="11" class="table-message">
                     No se encontraron productos.
                 </td>
             </tr>
@@ -619,6 +793,12 @@ function renderProductTable() {
                         ${escapeHtml(product.Categoria)}
                     </td>
 
+                    <td>${escapeHtml(product.Presentacion ?? "—")}</td>
+
+                    <td>${escapeHtml(
+                        product.Proveedor_Referencia ?? "—"
+                    )}</td>
+
                     <td>
                         ${currencyFormatter.format(
                             product.Costo_Unitario_CLP ?? 0
@@ -635,6 +815,10 @@ function renderProductTable() {
                         <span class="${lowStockClass}">
                             ${numberFormatter.format(stock)}
                         </span>
+                    </td>
+
+                    <td>
+                        ${numberFormatter.format(minimum)}
                     </td>
 
                     <td>
@@ -1045,7 +1229,7 @@ async function loadProducts() {
 
         productTableBody.innerHTML = `
             <tr>
-                <td colspan="8" class="table-message error">
+                <td colspan="11" class="table-message error">
                     No fue posible cargar los productos.
                 </td>
             </tr>
@@ -1057,6 +1241,755 @@ async function loadProducts() {
             "No fue posible cargar el catálogo de productos."
         );
     }
+}
+
+
+function populateFilter(selectElement, values, placeholder) {
+    populateSelect(
+        selectElement,
+        [...new Set(values.filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b, "es")),
+        placeholder
+    );
+}
+
+
+function applySalesFilters() {
+    const from = salesDateFrom.value;
+    const to = salesDateTo.value;
+    const payment = salesPaymentFilter.value;
+    const status = salesStatusFilter.value;
+
+    filteredSales = sales.filter((sale) => {
+        const saleDate = String(sale.Fecha ?? "").slice(0, 10);
+
+        return (
+            (!from || saleDate >= from) &&
+            (!to || saleDate <= to) &&
+            (!payment || sale.Medio_Pago === payment) &&
+            (!status || sale.Estado === status)
+        );
+    });
+
+    salesPageNumber = 0;
+    renderSales();
+}
+
+
+function renderSales() {
+    const pageCount = Math.max(
+        1,
+        Math.ceil(filteredSales.length / salesPageSize)
+    );
+    salesPageNumber = Math.min(salesPageNumber, pageCount - 1);
+    const start = salesPageNumber * salesPageSize;
+    const pageSales = filteredSales.slice(
+        start,
+        start + salesPageSize
+    );
+
+    salesCount.textContent =
+        `${filteredSales.length} venta${filteredSales.length === 1 ? "" : "s"}`;
+    salesPageInfo.textContent =
+        `Página ${salesPageNumber + 1} de ${pageCount}`;
+
+    document.querySelector("#salesPreviousPage").disabled =
+        salesPageNumber === 0;
+    document.querySelector("#salesNextPage").disabled =
+        salesPageNumber >= pageCount - 1;
+
+    if (!pageSales.length) {
+        salesTableBody.innerHTML = `
+            <tr><td colspan="9" class="table-message">
+                No se encontraron ventas con esos filtros.
+            </td></tr>
+        `;
+
+        return;
+    }
+
+    const usersById = new Map(
+        demoUsers.map((user) => [user.ID_Usuario, user.Nombre_Demo])
+    );
+
+    salesTableBody.innerHTML = pageSales.map((sale) => `
+        <tr>
+            <td>${formatDate(sale.Fecha)}</td>
+            <td>${escapeHtml(sale.ID_Venta)}</td>
+            <td>${escapeHtml(
+                usersById.get(sale.ID_Usuario) ?? sale.ID_Usuario ?? "—"
+            )}</td>
+            <td>${escapeHtml(sale.Medio_Pago ?? "—")}</td>
+            <td>${currencyFormatter.format(sale.Subtotal_CLP ?? 0)}</td>
+            <td>${currencyFormatter.format(sale.Descuento_CLP ?? 0)}</td>
+            <td>${currencyFormatter.format(sale.Total_CLP ?? 0)}</td>
+            <td>${escapeHtml(sale.Estado ?? "—")}</td>
+            <td>
+                <button
+                    class="table-action"
+                    type="button"
+                    data-sale-id="${escapeHtml(sale.ID_Venta)}"
+                >Ver detalle</button>
+            </td>
+        </tr>
+    `).join("");
+}
+
+
+async function loadSales() {
+    if (salesLoaded) {
+        return;
+    }
+
+    try {
+        const [salesResponse, usersResponse] = await Promise.all([
+            requestJson("/api/ventas"),
+            requestJson("/api/usuarios")
+        ]);
+
+        sales = salesResponse.datos ?? [];
+        demoUsers = usersResponse.datos ?? [];
+        populateFilter(
+            salesPaymentFilter,
+            sales.map((sale) => sale.Medio_Pago),
+            "Todos los medios"
+        );
+        populateFilter(
+            salesStatusFilter,
+            sales.map((sale) => sale.Estado),
+            "Todos los estados"
+        );
+        salesLoaded = true;
+        applySalesFilters();
+    } catch (error) {
+        console.error("Error al cargar ventas:", error);
+        salesTableBody.innerHTML = `
+            <tr><td colspan="9" class="table-message error">
+                No fue posible cargar las ventas.
+            </td></tr>
+        `;
+        salesCount.textContent = "Error de carga";
+        showNotification("No fue posible cargar las ventas.");
+    }
+}
+
+
+async function showSaleDetails(saleId) {
+    try {
+        const sale = await requestJson(
+            `/api/ventas/${encodeURIComponent(saleId)}`
+        );
+        const header = sale.venta;
+
+        document.querySelector("#saleDetailTitle").textContent =
+            `Venta ${header.ID_Venta}`;
+        document.querySelector("#saleDetailSummary").innerHTML = `
+            <span>Fecha: <strong>${formatDate(header.Fecha)}</strong></span>
+            <span>Medio: <strong>${escapeHtml(header.Medio_Pago)}</strong></span>
+            <span>Subtotal: <strong>${currencyFormatter.format(
+                header.Subtotal_CLP ?? 0
+            )}</strong></span>
+            <span>Descuento: <strong>${currencyFormatter.format(
+                header.Descuento_CLP ?? 0
+            )}</strong></span>
+            <span>Total: <strong>${currencyFormatter.format(
+                header.Total_CLP ?? 0
+            )}</strong></span>
+        `;
+        saleDetailBody.innerHTML = sale.detalle.length
+            ? sale.detalle.map((item) => `
+                <tr>
+                    <td>${escapeHtml(item.Nombre_Producto ?? item.ID_Producto)}</td>
+                    <td>${escapeHtml(item.Categoria ?? "—")}</td>
+                    <td>${numberFormatter.format(item.Cantidad ?? 0)}</td>
+                    <td>${currencyFormatter.format(item.Precio_Unitario_CLP ?? 0)}</td>
+                    <td>${numberFormatter.format(item.Descuento_Porcentaje ?? 0)}%</td>
+                    <td>${currencyFormatter.format(item.Total_Linea_CLP ?? 0)}</td>
+                    <td>${currencyFormatter.format(item.Margen_Bruto_Linea_CLP ?? 0)}</td>
+                </tr>
+            `).join("")
+            : `<tr><td colspan="7" class="table-message">Sin productos asociados.</td></tr>`;
+
+        saleDetailPanel.hidden = false;
+        saleDetailPanel.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    } catch (error) {
+        console.error("Error al cargar el detalle de venta:", error);
+        showNotification("No fue posible cargar el detalle de la venta.");
+    }
+}
+
+
+function applyPurchaseFilters() {
+    const from = purchaseDateFrom.value;
+    const to = purchaseDateTo.value;
+    const supplier = purchaseSupplierFilter.value;
+    const status = purchaseStatusFilter.value;
+
+    filteredPurchases = purchases.filter((purchase) => {
+        const purchaseDate = String(purchase.Fecha ?? "").slice(0, 10);
+
+        return (
+            (!from || purchaseDate >= from) &&
+            (!to || purchaseDate <= to) &&
+            (!supplier || purchase.Proveedor === supplier) &&
+            (!status || purchase.Estado === status)
+        );
+    });
+
+    renderPurchases();
+}
+
+
+function renderInventory() {
+    const lowStock = inventory.filter(
+        (product) =>
+            Number(product.Stock_Actual ?? 0) <=
+            Number(product.Stock_Minimo ?? 0)
+    );
+
+    document.querySelector("#inventoryCount").textContent =
+        `${inventory.length} productos`;
+    document.querySelector("#lowStockCount").textContent =
+        numberFormatter.format(lowStock.length);
+
+    inventoryTableBody.innerHTML = inventory.length
+        ? inventory.map((product) => {
+            const isLow =
+                Number(product.Stock_Actual ?? 0) <=
+                Number(product.Stock_Minimo ?? 0);
+
+            return `
+                <tr>
+                    <td>${escapeHtml(product.ID_Producto)}</td>
+                    <td>${escapeHtml(product.Nombre_Producto)}</td>
+                    <td>${escapeHtml(product.Categoria)}</td>
+                    <td>${escapeHtml(product.Presentacion)}</td>
+                    <td>${escapeHtml(product.Proveedor_Referencia)}</td>
+                    <td><span class="${isLow ? "stock-low" : ""}">${
+                        numberFormatter.format(product.Stock_Actual ?? 0)
+                    }</span></td>
+                    <td>${numberFormatter.format(product.Stock_Minimo ?? 0)}</td>
+                    <td>${currencyFormatter.format(product.Costo_Unitario_CLP ?? 0)}</td>
+                    <td>${currencyFormatter.format(product.Precio_Venta_CLP ?? 0)}</td>
+                    <td>${escapeHtml(product.Estado)}</td>
+                </tr>
+            `;
+        }).join("")
+        : `<tr><td colspan="10" class="table-message">No hay productos.</td></tr>`;
+}
+
+
+function renderPurchases() {
+    document.querySelector("#purchaseListCount").textContent =
+        `${filteredPurchases.length} compras`;
+
+    purchasesTableBody.innerHTML = filteredPurchases.length
+        ? filteredPurchases.map((purchase) => `
+            <tr>
+                <td>${formatDate(purchase.Fecha)}</td>
+                <td>${escapeHtml(purchase.ID_Compra)}</td>
+                <td>${escapeHtml(purchase.Proveedor)}</td>
+                <td>${escapeHtml(purchase.Estado)}</td>
+                <td>${currencyFormatter.format(purchase.Total_CLP ?? 0)}</td>
+                <td>
+                    <button
+                        class="table-action"
+                        type="button"
+                        data-purchase-id="${escapeHtml(purchase.ID_Compra)}"
+                    >Ver detalle</button>
+                </td>
+            </tr>
+        `).join("")
+        : `<tr><td colspan="6" class="table-message">No se encontraron compras.</td></tr>`;
+}
+
+
+async function loadPurchases() {
+    if (purchasesLoaded) {
+        return;
+    }
+
+    try {
+        const [purchaseResponse, detailResponse, productResponse] =
+            await Promise.all([
+                requestJson("/api/compras"),
+                requestJson("/api/detalle-compras"),
+                requestJson("/api/productos")
+            ]);
+
+        purchases = purchaseResponse.datos ?? [];
+        filteredPurchases = [...purchases];
+        purchaseDetails = detailResponse.datos ?? [];
+        inventory = productResponse.datos ?? [];
+
+        populateFilter(
+            purchaseSupplierFilter,
+            purchases.map((purchase) => purchase.Proveedor),
+            "Todos los proveedores"
+        );
+        populateFilter(
+            purchaseStatusFilter,
+            purchases.map((purchase) => purchase.Estado),
+            "Todos los estados"
+        );
+
+        document.querySelector("#purchaseCount").textContent =
+            numberFormatter.format(purchases.length);
+        document.querySelector("#purchaseTotal").textContent =
+            currencyFormatter.format(
+                purchases.reduce(
+                    (total, purchase) =>
+                        total + Number(purchase.Total_CLP ?? 0),
+                    0
+                )
+            );
+        document.querySelector("#purchasedUnits").textContent =
+            numberFormatter.format(
+                purchaseDetails.reduce(
+                    (total, item) =>
+                        total + Number(item.Cantidad ?? 0),
+                    0
+                )
+            );
+
+        renderInventory();
+        renderPurchases();
+        purchasesLoaded = true;
+    } catch (error) {
+        console.error("Error al cargar compras e inventario:", error);
+        purchasesTableBody.innerHTML = `
+            <tr><td colspan="6" class="table-message error">
+                No fue posible cargar las compras.
+            </td></tr>
+        `;
+        inventoryTableBody.innerHTML = `
+            <tr><td colspan="10" class="table-message error">
+                No fue posible cargar el inventario.
+            </td></tr>
+        `;
+        showNotification(
+            "No fue posible cargar las compras y el inventario."
+        );
+    }
+}
+
+
+async function showPurchaseDetails(purchaseId) {
+    try {
+        const result = await requestJson(
+            `/api/compras/${encodeURIComponent(purchaseId)}`
+        );
+        const purchase = result.compra;
+
+        document.querySelector("#purchaseDetailTitle").textContent =
+            `Compra ${purchase.ID_Compra}`;
+        document.querySelector("#purchaseDetailSummary").innerHTML = `
+            <span>Fecha: <strong>${formatDate(purchase.Fecha)}</strong></span>
+            <span>Proveedor: <strong>${escapeHtml(purchase.Proveedor)}</strong></span>
+            <span>Estado: <strong>${escapeHtml(purchase.Estado)}</strong></span>
+            <span>Total: <strong>${currencyFormatter.format(
+                purchase.Total_CLP ?? 0
+            )}</strong></span>
+        `;
+        purchaseDetailBody.innerHTML = result.detalle.length
+            ? result.detalle.map((item) => `
+                <tr>
+                    <td>${escapeHtml(item.Nombre_Producto ?? item.ID_Producto)}</td>
+                    <td>${escapeHtml(item.Categoria ?? "—")}</td>
+                    <td>${numberFormatter.format(item.Cantidad ?? 0)}</td>
+                    <td>${currencyFormatter.format(item.Costo_Unitario_CLP ?? 0)}</td>
+                    <td>${currencyFormatter.format(item.Total_Linea_CLP ?? 0)}</td>
+                </tr>
+            `).join("")
+            : `<tr><td colspan="5" class="table-message">Sin productos asociados.</td></tr>`;
+        purchaseDetailPanel.hidden = false;
+        purchaseDetailPanel.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    } catch (error) {
+        console.error("Error al cargar el detalle de compra:", error);
+        showNotification("No fue posible cargar el detalle de la compra.");
+    }
+}
+
+
+function renderMarginLines() {
+    const search = marginSearch.value
+        .trim()
+        .toLocaleLowerCase("es");
+    const category = marginCategoryFilter.value;
+    const filtered = marginSales.filter((item) => {
+        const productName = String(
+            item.Nombre_Producto ?? ""
+        ).toLocaleLowerCase("es");
+        const productId = String(
+            item.ID_Producto ?? ""
+        ).toLocaleLowerCase("es");
+        const saleId = String(
+            item.ID_Venta ?? ""
+        ).toLocaleLowerCase("es");
+
+        return (
+            (!search ||
+                productName.includes(search) ||
+                productId.includes(search) ||
+                saleId.includes(search)) &&
+            (!category || item.Categoria === category)
+        );
+    });
+
+    document.querySelector("#marginLineCount").textContent =
+        `${filtered.length} líneas`;
+    marginLinesBody.innerHTML = filtered.length
+        ? filtered.map((item) => `
+            <tr>
+                <td>${formatDate(item.Fecha)}</td>
+                <td>${escapeHtml(item.ID_Venta)}</td>
+                <td>${escapeHtml(item.Nombre_Producto ?? item.ID_Producto)}</td>
+                <td>${escapeHtml(item.Categoria ?? "—")}</td>
+                <td>${numberFormatter.format(item.Cantidad ?? 0)}</td>
+                <td>${currencyFormatter.format(item.Precio_Unitario_CLP ?? 0)}</td>
+                <td>${numberFormatter.format(item.Descuento_Porcentaje ?? 0)}%</td>
+                <td>${currencyFormatter.format(item.Total_Linea_CLP ?? 0)}</td>
+                <td>${currencyFormatter.format(
+                    item.Costo_Unitario_Referencia_CLP ?? 0
+                )}</td>
+                <td>${currencyFormatter.format(
+                    item.Margen_Bruto_Linea_CLP ?? 0
+                )}</td>
+            </tr>
+        `).join("")
+        : `<tr><td colspan="10" class="table-message">No hay líneas con esos filtros.</td></tr>`;
+}
+
+
+function renderMarginSummaries(summary) {
+    const indicators = summary.indicadores ?? {};
+    const revenue = Number(indicators.ingresos_clp ?? 0);
+    const grossMargin = Number(indicators.margen_bruto_clp ?? 0);
+    const marginPercent = revenue > 0
+        ? grossMargin / revenue * 100
+        : 0;
+
+    document.querySelector("#marginRevenue").textContent =
+        currencyFormatter.format(revenue);
+    document.querySelector("#marginGross").textContent =
+        currencyFormatter.format(grossMargin);
+    document.querySelector("#marginPercent").textContent =
+        `${numberFormatter.format(marginPercent)}%`;
+    document.querySelector("#marginLeader").textContent =
+        indicators.producto_lider ?? "—";
+
+    const categories = new Map();
+    const productsByMargin = new Map();
+
+    marginSales.forEach((item) => {
+        const category = item.Categoria ?? "Sin categoría";
+        const categoryTotals = categories.get(category) ?? {
+            units: 0,
+            sales: 0,
+            margin: 0
+        };
+        categoryTotals.units += Number(item.Cantidad ?? 0);
+        categoryTotals.sales += Number(item.Total_Linea_CLP ?? 0);
+        categoryTotals.margin += Number(
+            item.Margen_Bruto_Linea_CLP ?? 0
+        );
+        categories.set(category, categoryTotals);
+
+        const productId = item.ID_Producto;
+        const productTotals = productsByMargin.get(productId) ?? {
+            name: item.Nombre_Producto ?? productId,
+            category,
+            units: 0,
+            margin: 0
+        };
+        productTotals.units += Number(item.Cantidad ?? 0);
+        productTotals.margin += Number(
+            item.Margen_Bruto_Linea_CLP ?? 0
+        );
+        productsByMargin.set(productId, productTotals);
+    });
+
+    const categoryRows = [...categories.entries()]
+        .sort((a, b) => b[1].sales - a[1].sales);
+    marginCategoryBody.innerHTML = categoryRows.length
+        ? categoryRows.map(([name, values]) => `
+            <tr>
+                <td>${escapeHtml(name)}</td>
+                <td>${numberFormatter.format(values.units)}</td>
+                <td>${currencyFormatter.format(values.sales)}</td>
+                <td>${currencyFormatter.format(values.margin)}</td>
+            </tr>
+        `).join("")
+        : `<tr><td colspan="4" class="table-message">No hay datos.</td></tr>`;
+
+    const productRows = [...productsByMargin.values()]
+        .sort((a, b) => b.margin - a.margin)
+        .slice(0, 10);
+    marginRankingBody.innerHTML = productRows.length
+        ? productRows.map((product) => `
+            <tr>
+                <td>${escapeHtml(product.name)}</td>
+                <td>${escapeHtml(product.category)}</td>
+                <td>${numberFormatter.format(product.units)}</td>
+                <td>${currencyFormatter.format(product.margin)}</td>
+            </tr>
+        `).join("")
+        : `<tr><td colspan="4" class="table-message">No hay datos.</td></tr>`;
+}
+
+
+async function loadMargins() {
+    if (marginsLoaded) {
+        return;
+    }
+
+    try {
+        const [summary, detailResponse] = await Promise.all([
+            requestJson("/api/resumen"),
+            requestJson("/api/detalle-ventas")
+        ]);
+
+        marginSales = detailResponse.datos ?? [];
+        populateFilter(
+            marginCategoryFilter,
+            marginSales.map((item) => item.Categoria),
+            "Todas las categorías"
+        );
+        renderMarginSummaries(summary);
+        renderMarginLines();
+        marginsLoaded = true;
+    } catch (error) {
+        console.error("Error al cargar costos y márgenes:", error);
+        marginLinesBody.innerHTML = `
+            <tr><td colspan="10" class="table-message error">
+                No fue posible cargar el detalle de costos y márgenes.
+            </td></tr>
+        `;
+        showNotification("No fue posible cargar costos y márgenes.");
+    }
+}
+
+
+function renderPromotions() {
+    const filtered = promotions.filter(
+        (promotion) =>
+            !promotionStatusFilter.value ||
+            promotion.Estado === promotionStatusFilter.value
+    );
+
+    document.querySelector("#promotionCount").textContent =
+        `${filtered.length} promociones`;
+    promotionsTableBody.innerHTML = filtered.length
+        ? filtered.map((promotion) => `
+            <tr>
+                <td>${escapeHtml(promotion.ID_Promo)}</td>
+                <td>${escapeHtml(promotion.Nombre)}</td>
+                <td>${escapeHtml(promotion.Tipo)}</td>
+                <td>${numberFormatter.format(
+                    promotion.Valor_Porcentaje ?? 0
+                )}%</td>
+                <td>${formatDate(promotion.Inicio)}</td>
+                <td>${formatDate(promotion.Fin)}</td>
+                <td>${escapeHtml(promotion.Aplica_A)}</td>
+                <td>${escapeHtml(promotion.Estado)}</td>
+            </tr>
+        `).join("")
+        : `<tr><td colspan="8" class="table-message">No hay promociones para este estado.</td></tr>`;
+}
+
+
+async function loadPromotions() {
+    if (promotionsLoaded) {
+        return;
+    }
+
+    try {
+        const response = await requestJson("/api/promociones");
+        promotions = response.datos ?? [];
+        populateFilter(
+            promotionStatusFilter,
+            promotions.map((promotion) => promotion.Estado),
+            "Todos los estados"
+        );
+        renderPromotions();
+        promotionsLoaded = true;
+    } catch (error) {
+        console.error("Error al cargar promociones:", error);
+        promotionsTableBody.innerHTML = `
+            <tr><td colspan="8" class="table-message error">
+                No fue posible cargar las promociones.
+            </td></tr>
+        `;
+        showNotification("No fue posible cargar las promociones.");
+    }
+}
+
+
+async function loadUsers() {
+    if (usersLoaded) {
+        return;
+    }
+
+    try {
+        const response = await requestJson("/api/usuarios");
+        demoUsers = response.datos ?? [];
+        document.querySelector("#usersCount").textContent =
+            `${demoUsers.length} usuarios`;
+        usersTableBody.innerHTML = demoUsers.length
+            ? demoUsers.map((user) => `
+                <tr>
+                    <td>${escapeHtml(user.ID_Usuario)}</td>
+                    <td>${escapeHtml(user.Nombre_Demo)}</td>
+                    <td>${escapeHtml(user.Rol)}</td>
+                    <td>${escapeHtml(user.Estado)}</td>
+                </tr>
+            `).join("")
+            : `<tr><td colspan="4" class="table-message">No hay usuarios.</td></tr>`;
+        usersLoaded = true;
+    } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+        usersTableBody.innerHTML = `
+            <tr><td colspan="4" class="table-message error">
+                No fue posible cargar los usuarios.
+            </td></tr>
+        `;
+        showNotification("No fue posible cargar los usuarios.");
+    }
+}
+
+
+function downloadCsv(filename, columns, rows) {
+    if (!rows.length) {
+        showNotification("No hay datos disponibles para exportar.");
+        return;
+    }
+
+    const header = columns
+        .map(([, label]) => escapeCsvValue(label))
+        .join(";");
+    const csvRows = rows.map((row) =>
+        columns
+            .map(([key]) => escapeCsvValue(row[key]))
+            .join(";")
+    );
+    const blob = new Blob(
+        [`\uFEFF${[header, ...csvRows].join("\r\n")}`],
+        { type: "text/csv;charset=utf-8" }
+    );
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showNotification("Archivo CSV exportado.");
+}
+
+
+function exportCurrentSales() {
+    downloadCsv(
+        "ventas_farmavital.csv",
+        [
+            ["ID_Venta", "N.º venta"],
+            ["Fecha", "Fecha"],
+            ["ID_Usuario", "ID usuario"],
+            ["Medio_Pago", "Medio de pago"],
+            ["Subtotal_CLP", "Subtotal CLP"],
+            ["Descuento_CLP", "Descuento CLP"],
+            ["Total_CLP", "Total CLP"],
+            ["Estado", "Estado"]
+        ],
+        filteredSales
+    );
+}
+
+
+function exportCurrentPurchases() {
+    downloadCsv(
+        "compras_farmavital.csv",
+        [
+            ["ID_Compra", "N.º compra"],
+            ["Fecha", "Fecha"],
+            ["Proveedor", "Proveedor"],
+            ["Estado", "Estado"],
+            ["Total_CLP", "Total CLP"]
+        ],
+        filteredPurchases
+    );
+}
+
+
+function exportMarginLines() {
+    const search = marginSearch.value
+        .trim()
+        .toLocaleLowerCase("es");
+    const category = marginCategoryFilter.value;
+    const rows = marginSales.filter((item) => {
+        const values = [
+            item.Nombre_Producto,
+            item.ID_Producto,
+            item.ID_Venta
+        ].join(" ").toLocaleLowerCase("es");
+
+        return (
+            (!search || values.includes(search)) &&
+            (!category || item.Categoria === category)
+        );
+    });
+
+    downloadCsv(
+        "costos_margenes_farmavital.csv",
+        [
+            ["Fecha", "Fecha"],
+            ["ID_Venta", "N.º venta"],
+            ["ID_Producto", "Código producto"],
+            ["Nombre_Producto", "Producto"],
+            ["Categoria", "Categoría"],
+            ["Cantidad", "Unidades"],
+            ["Precio_Unitario_CLP", "Precio unitario CLP"],
+            ["Descuento_Porcentaje", "Descuento %"],
+            ["Total_Linea_CLP", "Total línea CLP"],
+            [
+                "Costo_Unitario_Referencia_CLP",
+                "Costo unitario CLP"
+            ],
+            ["Margen_Bruto_Linea_CLP", "Margen bruto CLP"]
+        ],
+        rows
+    );
+}
+
+
+function exportPromotions() {
+    const rows = promotions.filter(
+        (promotion) =>
+            !promotionStatusFilter.value ||
+            promotion.Estado === promotionStatusFilter.value
+    );
+
+    downloadCsv(
+        "promociones_farmavital.csv",
+        [
+            ["ID_Promo", "Código"],
+            ["Nombre", "Promoción"],
+            ["Tipo", "Tipo"],
+            ["Valor_Porcentaje", "Descuento %"],
+            ["Inicio", "Inicio"],
+            ["Fin", "Fin"],
+            ["Aplica_A", "Aplica a"],
+            ["Estado", "Estado"]
+        ],
+        rows
+    );
 }
 
 
@@ -1116,6 +2049,110 @@ exportSalesButton.addEventListener(
     "click",
     exportSalesCsv
 );
+exportSalesPageButton.addEventListener(
+    "click",
+    exportCurrentSales
+);
+document.querySelector("#salesDateFrom").addEventListener(
+    "change",
+    applySalesFilters
+);
+document.querySelector("#salesDateTo").addEventListener(
+    "change",
+    applySalesFilters
+);
+salesPaymentFilter.addEventListener("change", applySalesFilters);
+salesStatusFilter.addEventListener("change", applySalesFilters);
+document.querySelector("#resetSalesFilters").addEventListener(
+    "click",
+    () => {
+        salesDateFrom.value = "";
+        salesDateTo.value = "";
+        salesPaymentFilter.value = "";
+        salesStatusFilter.value = "";
+        applySalesFilters();
+    }
+);
+document.querySelector("#salesPreviousPage").addEventListener(
+    "click",
+    () => {
+        salesPageNumber -= 1;
+        renderSales();
+    }
+);
+document.querySelector("#salesNextPage").addEventListener(
+    "click",
+    () => {
+        salesPageNumber += 1;
+        renderSales();
+    }
+);
+salesTableBody.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-sale-id]");
+
+    if (button) {
+        showSaleDetails(button.dataset.saleId);
+    }
+});
+document.querySelector("#closeSaleDetail").addEventListener(
+    "click",
+    () => {
+        saleDetailPanel.hidden = true;
+    }
+);
+
+purchaseDateFrom.addEventListener("change", applyPurchaseFilters);
+purchaseDateTo.addEventListener("change", applyPurchaseFilters);
+purchaseSupplierFilter.addEventListener(
+    "change",
+    applyPurchaseFilters
+);
+purchaseStatusFilter.addEventListener(
+    "change",
+    applyPurchaseFilters
+);
+document.querySelector("#resetPurchaseFilters").addEventListener(
+    "click",
+    () => {
+        purchaseDateFrom.value = "";
+        purchaseDateTo.value = "";
+        purchaseSupplierFilter.value = "";
+        purchaseStatusFilter.value = "";
+        applyPurchaseFilters();
+    }
+);
+purchasesTableBody.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-purchase-id]");
+
+    if (button) {
+        showPurchaseDetails(button.dataset.purchaseId);
+    }
+});
+document.querySelector("#closePurchaseDetail").addEventListener(
+    "click",
+    () => {
+        purchaseDetailPanel.hidden = true;
+    }
+);
+document.querySelector("#exportPurchasesButton").addEventListener(
+    "click",
+    exportCurrentPurchases
+);
+
+marginSearch.addEventListener("input", renderMarginLines);
+marginCategoryFilter.addEventListener("change", renderMarginLines);
+document.querySelector("#exportMarginsButton").addEventListener(
+    "click",
+    exportMarginLines
+);
+promotionStatusFilter.addEventListener(
+    "change",
+    renderPromotions
+);
+document.querySelector("#exportPromotionsButton").addEventListener(
+    "click",
+    exportPromotions
+);
 
 productForm.addEventListener("submit", saveProduct);
 
@@ -1137,10 +2174,7 @@ document
 
 /* Inicialização */
 
-const initialPage =
-    window.location.hash === "#productos"
-        ? "productos"
-        : "inicio";
+const initialPage = window.location.hash.slice(1) || "inicio";
 
 navigateToPage(initialPage, false);
 loadDashboard();

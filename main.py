@@ -22,6 +22,10 @@ ABAS_OBRIGATORIAS = {
     "Productos",
     "Ventas",
     "Detalle_Ventas",
+    "Compras",
+    "Detalle_Compras",
+    "Promociones",
+    "Usuarios",
 }
 
 
@@ -490,6 +494,237 @@ def consultar_venda(id_venta: str) -> dict:
             venda_encontrada
         )[0],
         "detalle": dataframe_para_lista(linhas)
+    }
+
+
+@app.get(
+    "/api/detalle-ventas",
+    tags=["Vendas"],
+    summary="Listar os itens de todas as vendas"
+)
+def listar_detalhes_vendas() -> dict:
+    """Retorna itens de venda com dados do produto e da venda."""
+
+    detalhes = abas["Detalle_Ventas"].copy()
+
+    detalhes = detalhes.merge(
+        abas["Productos"][
+            ["ID_Producto", "Nombre_Producto", "Categoria"]
+        ],
+        on="ID_Producto",
+        how="left"
+    )
+
+    detalhes = detalhes.merge(
+        abas["Ventas"][
+            ["ID_Venta", "Fecha", "Medio_Pago", "Estado"]
+        ],
+        on="ID_Venta",
+        how="left"
+    )
+
+    return {
+        "total": int(len(detalhes)),
+        "datos": dataframe_para_lista(detalhes)
+    }
+
+
+# =========================================================
+# COMPRAS E INVENTÁRIO
+# =========================================================
+
+@app.get(
+    "/api/compras",
+    tags=["Compras"],
+    summary="Listar e filtrar compras"
+)
+def listar_compras(
+    desde: Optional[date] = Query(
+        default=None,
+        description="Data inicial no formato AAAA-MM-DD."
+    ),
+    hasta: Optional[date] = Query(
+        default=None,
+        description="Data final no formato AAAA-MM-DD."
+    ),
+    proveedor: Optional[str] = Query(
+        default=None,
+        description="Nome do fornecedor."
+    ),
+    estado: Optional[str] = Query(
+        default=None,
+        description="Estado da compra."
+    )
+) -> dict:
+    compras = abas["Compras"].copy()
+    compras["Fecha"] = pd.to_datetime(
+        compras["Fecha"],
+        errors="coerce"
+    )
+
+    if desde:
+        compras = compras[
+            compras["Fecha"] >= pd.Timestamp(desde)
+        ]
+
+    if hasta:
+        compras = compras[
+            compras["Fecha"] < pd.Timestamp(hasta)
+            + pd.Timedelta(days=1)
+        ]
+
+    if proveedor and proveedor.strip():
+        compras = compras[
+            compras["Proveedor"]
+            .astype(str)
+            .str.contains(
+                proveedor.strip(),
+                case=False,
+                na=False,
+                regex=False
+            )
+        ]
+
+    if estado and estado.strip():
+        compras = compras[
+            compras["Estado"]
+            .astype(str)
+            .str.lower()
+            == estado.strip().lower()
+        ]
+
+    compras = compras.sort_values(
+        by="Fecha",
+        ascending=False
+    )
+
+    return {
+        "total": int(len(compras)),
+        "datos": dataframe_para_lista(compras)
+    }
+
+
+@app.get(
+    "/api/compras/{id_compra}",
+    tags=["Compras"],
+    summary="Consultar uma compra e seus itens"
+)
+def consultar_compra(id_compra: str) -> dict:
+    compras = abas["Compras"]
+    detalhes = abas["Detalle_Compras"]
+    produtos = abas["Productos"]
+
+    compra = compras[
+        compras["ID_Compra"]
+        .astype(str)
+        .str.upper()
+        == id_compra.upper()
+    ]
+
+    if compra.empty:
+        raise HTTPException(
+            status_code=404,
+            detail="Compra não encontrada."
+        )
+
+    linhas = detalhes[
+        detalhes["ID_Compra"]
+        .astype(str)
+        .str.upper()
+        == id_compra.upper()
+    ].copy()
+
+    linhas = linhas.merge(
+        produtos[
+            ["ID_Producto", "Nombre_Producto", "Categoria"]
+        ],
+        on="ID_Producto",
+        how="left"
+    )
+
+    return {
+        "compra": dataframe_para_lista(compra)[0],
+        "detalle": dataframe_para_lista(linhas)
+    }
+
+
+@app.get(
+    "/api/detalle-compras",
+    tags=["Compras"],
+    summary="Listar os itens de todas as compras"
+)
+def listar_detalhes_compras() -> dict:
+    detalhes = abas["Detalle_Compras"].copy()
+    detalhes = detalhes.merge(
+        abas["Productos"][
+            ["ID_Producto", "Nombre_Producto", "Categoria"]
+        ],
+        on="ID_Producto",
+        how="left"
+    )
+    detalhes = detalhes.merge(
+        abas["Compras"][
+            ["ID_Compra", "Fecha", "Proveedor", "Estado"]
+        ],
+        on="ID_Compra",
+        how="left"
+    )
+
+    return {
+        "total": int(len(detalhes)),
+        "datos": dataframe_para_lista(detalhes)
+    }
+
+
+# =========================================================
+# PROMOÇÕES E USUÁRIOS
+# =========================================================
+
+@app.get(
+    "/api/promociones",
+    tags=["Promoções"],
+    summary="Listar e filtrar promoções"
+)
+def listar_promocoes(
+    estado: Optional[str] = Query(
+        default=None,
+        description="Estado da promoção."
+    )
+) -> dict:
+    promocoes = abas["Promociones"].copy()
+
+    if estado and estado.strip():
+        promocoes = promocoes[
+            promocoes["Estado"]
+            .astype(str)
+            .str.lower()
+            == estado.strip().lower()
+        ]
+
+    promocoes = promocoes.sort_values(
+        by="Inicio",
+        ascending=False
+    )
+
+    return {
+        "total": int(len(promocoes)),
+        "datos": dataframe_para_lista(promocoes)
+    }
+
+
+@app.get(
+    "/api/usuarios",
+    tags=["Sistema"],
+    summary="Listar usuários de demonstração"
+)
+def listar_usuarios() -> dict:
+    usuarios = abas["Usuarios"].copy().sort_values(
+        by="Nombre_Demo"
+    )
+
+    return {
+        "total": int(len(usuarios)),
+        "datos": dataframe_para_lista(usuarios)
     }
 
 
